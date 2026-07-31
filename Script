@@ -1,0 +1,626 @@
+--[[
+  ПИСКА УЛЬТРА МАКА v10.0 - ФЛИНГ + ВИЗУАЛЫ + ПРИЦЕЛ + КНОПКА
+  Место: StarterGui (LocalScript)
+  Особенности:
+  - Флинг игроков (отбрасывание с эффектами)
+  - Визуальные эффекты (частицы, вспышки, удар)
+  - Улучшенный прицел с анимацией
+  - Сенсорная кнопка для телефона
+  - Полная оптимизация
+--]]
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Debris = game:GetService("Debris")
+local player = Players.LocalPlayer
+
+-- ========== НАСТРОЙКИ ==========
+local CONFIG = {
+    -- Флинг
+    FlingPower = 150,           -- Сила отбрасывания
+    FlingRadius = 30,           -- Радиус действия
+    FlingCooldown = 1.5,        -- Перезарядка (сек)
+    FlingUpward = 80,           -- Вертикальная сила
+    
+    -- Aimbot
+    MaxDistance = 250,
+    Smoothness = 0.25,
+    FOV = 360,
+    HitboxPart = "Head",
+    VisibleCheck = true,
+    TeamCheck = true,
+    AutoAim = true,
+    AimSpeed = 1.0,
+    
+    -- ESP
+    ShowESP = true,
+    ShowBox = true,
+    ShowLine = true,
+    ShowDistance = true,
+    ShowHP = true,
+    ShowRoles = true,
+    
+    -- Круг
+    CircleSize = 150,
+    CircleColor = Color3.new(0, 1, 0),
+    CircleTransparency = 0.5,
+    
+    -- Оптимизация
+    UpdateRate = 3,
+    ESPUpdateRate = 2,
+}
+
+-- ========== СОЗДАНИЕ GUI ==========
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "PiskaUltraMakaGUI"
+screenGui.Parent = player.PlayerGui
+screenGui.ResetOnSpawn = false
+screenGui.DisplayOrder = 999
+
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+
+-- ========== ПРИЦЕЛ (улучшенный) ==========
+local aimCircle = Instance.new("Frame")
+aimCircle.Name = "AimCircle"
+aimCircle.Size = UDim2.new(0, CONFIG.CircleSize, 0, CONFIG.CircleSize)
+aimCircle.Position = UDim2.new(0.5, -CONFIG.CircleSize/2, 0.5, -CONFIG.CircleSize/2)
+aimCircle.BackgroundColor3 = CONFIG.CircleColor
+aimCircle.BackgroundTransparency = CONFIG.CircleTransparency
+aimCircle.BorderSizePixel = 2
+aimCircle.BorderColor3 = CONFIG.CircleColor
+aimCircle.Parent = screenGui
+
+-- Внешняя обводка (анимированная)
+local outerRing = Instance.new("Frame")
+outerRing.Name = "OuterRing"
+outerRing.Size = UDim2.new(1.3, 0, 1.3, 0)
+outerRing.Position = UDim2.new(-0.15, 0, -0.15, 0)
+outerRing.BackgroundColor3 = CONFIG.CircleColor
+outerRing.BackgroundTransparency = 0.8
+outerRing.BorderSizePixel = 2
+outerRing.BorderColor3 = CONFIG.CircleColor
+outerRing.Parent = aimCircle
+
+-- Внутренняя точка
+local dot = Instance.new("Frame")
+dot.Name = "Dot"
+dot.Size = UDim2.new(0, 6, 0, 6)
+dot.Position = UDim2.new(0.5, -3, 0.5, -3)
+dot.BackgroundColor3 = Color3.new(1, 0, 0)
+dot.BackgroundTransparency = 0
+dot.BorderSizePixel = 0
+dot.Parent = aimCircle
+
+-- Углы прицела (крест)
+local function createCorner(parent, position, size)
+    local corner = Instance.new("Frame")
+    corner.Size = size
+    corner.Position = position
+    corner.BackgroundColor3 = Color3.new(1, 0, 0)
+    corner.BackgroundTransparency = 0
+    corner.BorderSizePixel = 0
+    corner.Parent = parent
+    return corner
+end
+
+createCorner(aimCircle, UDim2.new(0.1, 0, 0.1, 0), UDim2.new(0, 8, 0, 8))
+createCorner(aimCircle, UDim2.new(0.9, -8, 0.1, 0), UDim2.new(0, 8, 0, 8))
+createCorner(aimCircle, UDim2.new(0.1, 0, 0.9, -8), UDim2.new(0, 8, 0, 8))
+createCorner(aimCircle, UDim2.new(0.9, -8, 0.9, -8), UDim2.new(0, 8, 0, 8))
+
+-- Анимация прицела (пульсация)
+local function animateAim()
+    TweenService:Create(outerRing, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, 0, true),
+        {Size = UDim2.new(1.5, 0, 1.5, 0), BackgroundTransparency = 0.9}
+    ):Play()
+    TweenService:Create(dot, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, 0, true),
+        {Size = UDim2.new(0, 10, 0, 10), Position = UDim2.new(0.5, -5, 0.5, -5)}
+    ):Play()
+    task.wait(0.15)
+    TweenService:Create(dot, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+        {Size = UDim2.new(0, 6, 0, 6), Position = UDim2.new(0.5, -3, 0.5, -3)}
+    ):Play()
+end
+
+-- ========== ВИЗУАЛЬНЫЕ ЭФФЕКТЫ ==========
+
+-- Создание взрыва
+local function createExplosion(position, color, size)
+    -- Вспышка
+    local flash = Instance.new("Frame")
+    flash.Size = UDim2.new(0, size or 200, 0, size or 200)
+    flash.Position = UDim2.new(0.5, -100, 0.5, -100)
+    flash.BackgroundColor3 = color or Color3.new(1, 0.8, 0.2)
+    flash.BackgroundTransparency = 0.5
+    flash.BorderSizePixel = 0
+    flash.Parent = screenGui
+    
+    TweenService:Create(flash, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}
+    ):Play()
+    Debris:AddItem(flash, 0.5)
+    
+    -- Частицы (искры)
+    for i = 1, 20 do
+        local particle = Instance.new("Frame")
+        particle.Size = UDim2.new(0, math.random(4, 10), 0, math.random(4, 10))
+        particle.Position = UDim2.new(
+            0.5 + math.random(-20, 20)/100,
+            0,
+            0.5 + math.random(-20, 20)/100,
+            0
+        )
+        particle.BackgroundColor3 = Color3.new(math.random(), math.random(), math.random())
+        particle.BorderSizePixel = 0
+        particle.Parent = screenGui
+        
+        local targetX = 0.5 + math.random(-50, 50)/100
+        local targetY = 0.5 + math.random(-50, 50)/100
+        
+        TweenService:Create(particle, TweenInfo.new(0.5 + math.random()/2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Position = UDim2.new(targetX, 0, targetY, 0), BackgroundTransparency = 1}
+        ):Play()
+        Debris:AddItem(particle, 0.8)
+    end
+    
+    -- Тряска экрана (визуальная)
+    local shake = Instance.new("Frame")
+    shake.Size = UDim2.new(1, 0, 1, 0)
+    shake.BackgroundTransparency = 1
+    shake.Parent = screenGui
+    
+    for i = 1, 5 do
+        shake.Position = UDim2.new(
+            math.random(-2, 2)/100,
+            0,
+            math.random(-2, 2)/100,
+            0
+        )
+        task.wait(0.03)
+    end
+    shake:Destroy()
+end
+
+-- Эффект удара (линия к цели)
+local function createHitEffect(targetPos)
+    local viewport = Camera.ViewportSize
+    local center = Vector2.new(viewport.X/2, viewport.Y/2)
+    
+    local line = Drawing.new("Line")
+    line.Thickness = 3
+    line.Color = Color3.new(1, 0.8, 0)
+    line.From = center
+    line.To = center + Vector2.new(math.random(-30, 30), math.random(-30, 30))
+    line.Visible = true
+    
+    -- Анимация линии
+    for i = 1, 10 do
+        line.From = Vector2.new(
+            center.X + math.random(-10, 10),
+            center.Y + math.random(-10, 10)
+        )
+        line.To = Vector2.new(
+            targetPos.X + math.random(-10, 10),
+            targetPos.Y + math.random(-10, 10)
+        )
+        task.wait(0.02)
+    end
+    line.Visible = false
+    line:Remove()
+end
+
+-- ========== ФЛИНГ ИГРОКОВ ==========
+local flingCooldown = 0
+
+local function flingPlayer(target)
+    if not target or not target.Character then return end
+    if tick() - flingCooldown < CONFIG.FlingCooldown then return end
+    
+    local char = target.Character
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChild("Humanoid")
+    
+    if not root or not hum or hum.Health <= 0 then return end
+    
+    flingCooldown = tick()
+    
+    -- Получаем направление от игрока к цели
+    local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not playerRoot then return end
+    
+    local direction = (root.Position - playerRoot.Position).Unit
+    local distance = (root.Position - playerRoot.Position).Magnitude
+    
+    if distance > CONFIG.FlingRadius then return end
+    
+    -- Сила флинга (с учетом расстояния)
+    local power = CONFIG.FlingPower * (1 - math.min(distance / CONFIG.FlingRadius, 0.8))
+    local upward = CONFIG.FlingUpward
+    
+    -- Применяем силу
+    root.Velocity = direction * power + Vector3.new(0, upward, 0)
+    
+    -- Добавляем случайный разброс
+    root.Velocity = root.Velocity + Vector3.new(
+        math.random(-30, 30),
+        math.random(10, 30),
+        math.random(-30, 30)
+    )
+    
+    -- Визуальные эффекты
+    local screenPos, onScreen = Camera:WorldToViewportPoint(root.Position)
+    if onScreen then
+        createHitEffect(Vector2.new(screenPos.X, screenPos.Y))
+        createExplosion(
+            UDim2.new(0.5, 0, 0.5, 0),
+            Color3.new(1, 0.5, 0.2),
+            150
+        )
+    end
+    
+    animateAim()
+    
+    -- Статус
+    statusLabel.Text = "💥 ФЛИНГ!"
+    task.wait(0.5)
+    statusLabel.Text = "🎯 ГОТОВ"
+end
+
+-- ========== КНОПКА ВЫСТРЕЛА ДЛЯ ТЕЛЕФОНА ==========
+local shootButton = Instance.new("ImageButton")
+shootButton.Name = "ShootButton"
+shootButton.Size = UDim2.new(0, 80, 0, 80)
+shootButton.Position = UDim2.new(1, -100, 1, -110)
+shootButton.AnchorPoint = Vector2.new(1, 1)
+shootButton.BackgroundColor3 = Color3.new(0.8, 0.2, 0.2)
+shootButton.BackgroundTransparency = 0.3
+shootButton.BorderSizePixel = 3
+shootButton.BorderColor3 = Color3.new(1, 0.5, 0.5)
+shootButton.Image = "rbxassetid://1234567890"  -- Замени на ID иконки
+shootButton.Parent = screenGui
+
+-- Сделать круглой
+local cornerShoot = Instance.new("UICorner")
+cornerShoot.CornerRadius = UDim.new(1, 0)
+cornerShoot.Parent = shootButton
+
+-- Текст на кнопке
+local shootLabel = Instance.new("TextLabel")
+shootLabel.Text = "💥"
+shootLabel.TextColor3 = Color3.new(1, 1, 1)
+shootLabel.TextScaled = true
+shootLabel.TextSize = 40
+shootLabel.BackgroundTransparency = 1
+shootLabel.Size = UDim2.new(1, 0, 1, 0)
+shootLabel.Font = Enum.Font.GothamBlack
+shootLabel.Parent = shootButton
+
+-- Анимация кнопки
+local function animateButton()
+    TweenService:Create(shootButton, TweenInfo.new(0.1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+        {Size = UDim2.new(0, 70, 0, 70)}
+    ):Play()
+    task.wait(0.1)
+    TweenService:Create(shootButton, TweenInfo.new(0.1, Enum.EasingStyle.Sine, Enum.EasingDirection.In),
+        {Size = UDim2.new(0, 80, 0, 80)}
+    ):Play()
+end
+
+-- Обработка нажатия
+shootButton.MouseButton1Click:Connect(function()
+    animateButton()
+    -- Находим ближайшую цель
+    local target = getBestTarget()
+    if target then
+        flingPlayer(target.Player)
+    else
+        statusLabel.Text = "❌ НЕТ ЦЕЛИ"
+        task.wait(0.5)
+        statusLabel.Text = "🎯 ГОТОВ"
+    end
+end)
+
+shootButton.TouchTap:Connect(function()
+    animateButton()
+    local target = getBestTarget()
+    if target then
+        flingPlayer(target.Player)
+    else
+        statusLabel.Text = "❌ НЕТ ЦЕЛИ"
+        task.wait(0.5)
+        statusLabel.Text = "🎯 ГОТОВ"
+    end
+end)
+
+-- Удерживание для мощного выстрела
+local holding = false
+local holdTime = 0
+
+shootButton.MouseButton1Down:Connect(function()
+    holding = true
+    holdTime = tick()
+    TweenService:Create(shootButton, TweenInfo.new(0.3), {Size = UDim2.new(0, 100, 0, 100)}):Play()
+    shootButton.BackgroundColor3 = Color3.new(1, 0.3, 0.3)
+end)
+
+shootButton.MouseButton1Up:Connect(function()
+    holding = false
+    local charge = math.min((tick() - holdTime) / 2, 1)
+    TweenService:Create(shootButton, TweenInfo.new(0.2), {Size = UDim2.new(0, 80, 0, 80)}):Play()
+    shootButton.BackgroundColor3 = Color3.new(0.8, 0.2, 0.2)
+    
+    if charge > 0.5 then
+        CONFIG.FlingPower = 150 + charge * 100
+        statusLabel.Text = "💥 МОЩНЫЙ ФЛИНГ!"
+        task.wait(0.5)
+        statusLabel.Text = "🎯 ГОТОВ"
+    end
+end)
+
+shootButton.TouchLongPress:Connect(function()
+    holding = true
+    holdTime = tick()
+    TweenService:Create(shootButton, TweenInfo.new(0.3), {Size = UDim2.new(0, 100, 0, 100)}):Play()
+    shootButton.BackgroundColor3 = Color3.new(1, 0.3, 0.3)
+end)
+
+-- ========== ОПРЕДЕЛЕНИЕ РОЛЕЙ ==========
+local roleCache = {}
+local roleCacheTime = {}
+
+local function getPlayerRole(target)
+    if not target or not target.Character then return "Обычный" end
+    
+    local now = tick()
+    if roleCache[target] and roleCacheTime[target] and now - roleCacheTime[target] < 1 then
+        return roleCache[target]
+    end
+    
+    local char = target.Character
+    local hum = char:FindFirstChild("Humanoid")
+    if not hum or hum.Health <= 0 then 
+        roleCache[target] = "Мертв"
+        roleCacheTime[target] = now
+        return "Мертв" 
+    end
+    
+    local hasKnife = false
+    local hasGun = false
+    
+    for _, child in ipairs(char:GetChildren()) do
+        if child:IsA("Tool") then
+            local name = child.Name:lower()
+            if name:find("knife") or name:find("dagger") or name:find("blade") or name:find("sword") then
+                hasKnife = true
+            elseif name:find("gun") or name:find("pistol") or name:find("revolver") then
+                hasGun = true
+            end
+        end
+    end
+    
+    local role
+    if hasKnife and not hasGun then
+        role = "🔪 Убийца"
+    elseif hasGun and not hasKnife then
+        role = "⭐ Шериф"
+    elseif hasKnife and hasGun then
+        role = "⚠️ Подозрительный"
+    else
+        if hum:GetAttribute("Role") then
+            local r = hum:GetAttribute("Role"):lower()
+            if r:find("murder") or r:find("killer") then
+                role = "🔪 Убийца"
+            elseif r:find("sheriff") or r:find("detective") then
+                role = "⭐ Шериф"
+            else
+                role = "👤 Обычный"
+            end
+        else
+            role = "👤 Обычный"
+        end
+    end
+    
+    roleCache[target] = role
+    roleCacheTime[target] = now
+    return role
+end
+
+-- ========== AIMBOT ==========
+local function getValidTargets()
+    local targets = {}
+    for _, other in ipairs(Players:GetPlayers()) do
+        if other ~= player and other.Character then
+            local char = other.Character
+            local hum = char:FindFirstChild("Humanoid")
+            local part = char:FindFirstChild(CONFIG.HitboxPart) or char:FindFirstChild("HumanoidRootPart")
+            if hum and hum.Health > 0 and part then
+                local pos = part.Position
+                local distance = (pos - Camera.CFrame.Position).Magnitude
+                if distance <= CONFIG.MaxDistance then
+                    targets[#targets + 1] = {
+                        Player = other,
+                        Part = part,
+                        Position = pos,
+                        Distance = distance,
+                        Character = char,
+                        Humanoid = hum,
+                        Role = getPlayerRole(other)
+                    }
+                end
+            end
+        end
+    end
+    return targets
+end
+
+local function isVisible(origin, targetPos)
+    if not CONFIG.VisibleCheck then return true end
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Blacklist
+    params.FilterDescendantsInstances = {player.Character, Camera}
+    local result = workspace:Raycast(origin, (targetPos - origin).Unit * (targetPos - origin).Magnitude, params)
+    return result == nil
+end
+
+local function getBestTarget()
+    local targets = getValidTargets()
+    if #targets == 0 then return nil end
+
+    local center = Camera.ViewportSize / 2
+    local best = nil
+    local bestScore = math.huge
+
+    for _, t in ipairs(targets) do
+        local screenPos, onScreen = Camera:WorldToViewportPoint(t.Position)
+        if not onScreen then continue end
+
+        local dx = screenPos.X - center.X
+        local dy = screenPos.Y - center.Y
+        local angle = math.deg(math.atan2(math.sqrt(dx^2 + dy^2), screenPos.Z))
+        if angle > CONFIG.FOV then continue end
+
+        if not isVisible(Camera.CFrame.Position, t.Position) then continue end
+        
+        -- Team Check (только убийца)
+        if CONFIG.TeamCheck and not isMurderer(t.Player) then
+            continue
+        end
+
+        local score = t.Distance * 0.1 + angle * 3
+        if score < bestScore then
+            bestScore = score
+            best = t
+        end
+    end
+    return best
+end
+
+local function isMurderer(target)
+    if not target then return false end
+    local role = getPlayerRole(target)
+    return role:find("Убийца") ~= nil
+end
+
+local function aimAt(target)
+    if not target or not target.Part then return end
+    local targetPos = target.Part.Position
+    local camPos = Camera.CFrame.Position
+    local targetCFrame = CFrame.lookAt(camPos, targetPos)
+    local smooth = CONFIG.Smoothness * CONFIG.AimSpeed
+    Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, math.clamp(smooth, 0.01, 0.9))
+end
+
+-- ========== ВЕРХНЯЯ ПАНЕЛЬ ==========
+local topPanel = Instance.new("Frame")
+topPanel.Name = "TopPanel"
+topPanel.Size = UDim2.new(0, 280, 0, 70)
+topPanel.Position = UDim2.new(0.02, 0, 0.02, 0)
+topPanel.BackgroundColor3 = Color3.new(0.05, 0.05, 0.1)
+topPanel.BackgroundTransparency = 0.2
+topPanel.BorderSizePixel = 2
+topPanel.BorderColor3 = Color3.new(0.3, 0.6, 1)
+topPanel.Parent = screenGui
+
+local avatarFrame = Instance.new("ImageLabel")
+avatarFrame.Name = "Avatar"
+avatarFrame.Size = UDim2.new(0, 55, 0, 55)
+avatarFrame.Position = UDim2.new(0, 8, 0.5, -27.5)
+avatarFrame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.3)
+avatarFrame.BorderSizePixel = 2
+avatarFrame.BorderColor3 = Color3.new(0.5, 0.8, 1)
+avatarFrame.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+avatarFrame.ClipsDescendants = true
+avatarFrame.Parent = topPanel
+
+local cornerAvatar = Instance.new("UICorner")
+cornerAvatar.CornerRadius = UDim.new(1, 0)
+cornerAvatar.Parent = avatarFrame
+
+local nickLabel = Instance.new("TextLabel")
+nickLabel.Name = "Nickname"
+nickLabel.Text = player.Name .. " 🐷"
+nickLabel.TextColor3 = Color3.new(0.8, 0.9, 1)
+nickLabel.TextScaled = true
+nickLabel.TextSize = 18
+nickLabel.BackgroundTransparency = 1
+nickLabel.Size = UDim2.new(1, -75, 0.5, 0)
+nickLabel.Position = UDim2.new(0, 70, 0, 5)
+nickLabel.TextXAlignment = Enum.TextXAlignment.Left
+nickLabel.Font = Enum.Font.GothamBold
+nickLabel.Parent = topPanel
+
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Name = "Status"
+statusLabel.Text = "🎯 ГОТОВ"
+statusLabel.TextColor3 = Color3.new(0, 1, 0)
+statusLabel.TextScaled = true
+statusLabel.TextSize = 12
+statusLabel.BackgroundTransparency = 1
+statusLabel.Size = UDim2.new(1, -75, 0.3, 0)
+statusLabel.Position = UDim2.new(0, 70, 0.5, 0)
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.Parent = topPanel
+
+local versionLabel = Instance.new("TextLabel")
+versionLabel.Name = "Version"
+versionLabel.Text = "v10.0 | ФЛИНГ + ВИЗУАЛЫ"
+versionLabel.TextColor3 = Color3.new(0.5, 0.8, 1)
+versionLabel.TextScaled = true
+versionLabel.TextSize = 10
+versionLabel.BackgroundTransparency = 1
+versionLabel.Size = UDim2.new(1, -75, 0.3, 0)
+versionLabel.Position = UDim2.new(0, 70, 0.7, 0)
+versionLabel.TextXAlignment = Enum.TextXAlignment.Left
+versionLabel.Font = Enum.Font.Gotham
+versionLabel.Parent = topPanel
+
+-- ========== КНОПКА МЕНЮ ==========
+local menuButton = Instance.new("TextButton")
+menuButton.Name = "MenuButton"
+menuButton.Text = "🐷"
+menuButton.TextColor3 = Color3.new(1, 1, 1)
+menuButton.TextScaled = true
+menuButton.TextSize = 30
+menuButton.Size = UDim2.new(0, 45, 0, 45)
+menuButton.Position = UDim2.new(0, 8, 0, 75)
+menuButton.BackgroundColor3 = Color3.new(0.15, 0.15, 0.25)
+menuButton.BorderSizePixel = 2
+menuButton.BorderColor3 = Color3.new(0.5, 0.8, 1)
+menuButton.Font = Enum.Font.GothamBlack
+menuButton.Parent = screenGui
+
+local cornerMenuBtn = Instance.new("UICorner")
+cornerMenuBtn.CornerRadius = UDim.new(1, 0)
+cornerMenuBtn.Parent = menuButton
+
+-- ========== ГЛАВНЫЙ ЦИКЛ ==========
+local frameCounter = 0
+
+RunService.RenderStepped:Connect(function()
+    frameCounter = frameCounter + 1
+    
+    if not player.Character or not player.Character:FindFirstChild("Humanoid") then return end
+    if player.Character.Humanoid.Health <= 0 then return end
+    
+    -- Aimbot (с оптимизацией)
+    if CONFIG.AutoAim and frameCounter % CONFIG.UpdateRate == 0 then
+        local target = getBestTarget()
+        if target then
+            aimAt(target)
+        end
+    end
+end)
+
+-- ========== ОБНОВЛЕНИЕ СТАТУСА ==========
+statusLabel.Text = "🎯 ГОТОВ"
+
+print("⚡ ПИСКА УЛЬТРА МАКА v10.0 ЗАГРУЖЕН!")
+print("💥 Флинг игроков активен")
+print("📱 Кнопка выстрела в правом нижнем углу")
+print("🎯 Прицел с анимацией")
+print("✨ Визуальные эффекты включены")
