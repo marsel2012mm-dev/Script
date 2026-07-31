@@ -1,200 +1,155 @@
 --[[
-  ╔═══════════════════════════════════════════════════════════════════╗
-  ║                                                                   ║
-  ║     🐷 ПИСКА УЛЬТРА МАКА v17.0 — МЕГА-ВЕРСИЯ 🐷               ║
-  ║                                                                   ║
-  ║  🔥 50+ функций                                                  ║
-  ║  🎯 Идеальный круглый прицел                                    ║
-  ║  🎨 10+ визуальных эффектов                                     ║
-  ║  📊 Полная статистика игроков                                   ║
-  ║  🎵 Звуки и анимации                                            ║
-  ║  ⚙️ 100% настраиваемый GUI                                      ║
-  ║  📱 Оптимизация для телефона                                    ║
-  ║                                                                   ║
-  ║  Автор: Dadadovich                                               ║
-  ╚═══════════════════════════════════════════════════════════════════╝
+  ╔══════════════════════════════════════════════════════════════════════════════╗
+  ║                                                                              ║
+  ║     🐷 ПИСКА УЛЬТРА МАКА v18.0 — МЕГА-СУПЕР-ГИПЕР ВЕРСИЯ 🐷             ║
+  ║                                                                              ║
+  ║  🔥 100+ функций                                                            ║
+  ║  🎵 20+ звуков                                                              ║
+  ║  🎯 Мега-аимбот с ИИ-предсказанием                                          ║
+  ║  💥 Супер-флинг с цепной реакцией и взрывами                                ║
+  ║  👁 ESP с короной, свиньями, анимацией                                      ║
+  ║  🎨 15+ визуальных эффектов                                                 ║
+  ║  ⚙️ Полное управление через мега-GUI                                        ║
+  ║  📱 Оптимизация под телефон                                                 ║
+  ║  🎵 Звуки на каждое действие                                                ║
+  ║                                                                              ║
+  ║  Автор: Dadadovich                                                          ║
+  ╚══════════════════════════════════════════════════════════════════════════════╝
 --]]
 
 -- ===========================
 -- 🔧 СЕРВИСЫ
 -- ===========================
-local P,RS,C,UIS = game:GetService("Players"), game:GetService("RunService"), workspace.CurrentCamera, game:GetService("UserInputService")
-local pl = P.LocalPlayer
-local mob = UIS.TouchEnabled and not UIS.MouseEnabled
-local TS = game:GetService("TweenService")
-local SS = game:GetService("SoundService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local SoundService = game:GetService("SoundService")
+local Debris = game:GetService("Debris")
+local player = Players.LocalPlayer
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
 
 -- ===========================
--- ⚙️ МЕГА-НАСТРОЙКИ
+-- 🎵 ЗВУКИ
 -- ===========================
-local CF = {
-    -- Аимбот
+local function playSound(id, volume)
+    if not id or id == "" then return end
+    local s = Instance.new("Sound")
+    s.SoundId = id
+    s.Volume = volume or 0.5
+    s.Parent = SoundService
+    s:Play()
+    Debris:AddItem(s, 3)
+end
+
+-- ===========================
+-- ⚙️ НАСТРОЙКИ
+-- ===========================
+local CONFIG = {
     Aim = {
-        E = true, MD = 500, F = 360, HP = "Head", VC = true, TC = true,
-        Pr = 0.5, Sm = 0.2, AS = true, PM = "Danger", WH = false,
-        ASp = 1.5, SmMin = 0.01, SmMax = 0.5,
-        LockOn = true, -- Блокировка на цели
-        SwitchDelay = 0.3, -- Задержка переключения целей
-        AimAssist = true, -- Помощь при прицеливании
-        SilentAim = false, -- Тихий аим (невидимый для других)
+        Enabled = true, MaxDistance = 600, FOV = 360, HitboxPart = "Head",
+        VisibleCheck = true, TeamCheck = true, Prediction = 0.6,
+        Smoothness = 0.15, AdaptiveSmooth = true, PriorityMode = "Danger",
+        WallHack = false, AimSpeed = 2.0, LockOn = true,
+        RecoilCompensation = 0.8,
     },
-    -- Флинг
     Fling = {
-        E = true, P = 300, R = 60, Co = 0.6, U = 150,
-        Ch = true, Ex = true, Particles = true,
-        ScreenShake = true, Sound = true,
-        AutoFling = true, -- Автоматический флинг врагов
-        FlingRadius = 30,
-        FlingAll = false, -- Флинг всех игроков
+        Enabled = true, Power = 400, Radius = 80, Cooldown = 0.4,
+        Upward = 200, ChainFling = true, Explosion = true,
+        Particles = true, ScreenShake = true, AutoFling = true,
     },
-    -- ESP (расширенный)
     ESP = {
-        E = true, B = true, L = true, D = true, HP = true,
-        R = true, W = true, N = true, TW = true,
-        C = true, Pig = true, Box = true,
-        Tracer = true, -- Линия к цели
-        HealthBar = true, -- Полоса здоровья
-        Armor = true, -- Броня (если есть)
-        Distance = true, -- Дистанция
-        Direction = true, -- Направление движения
-        BoxColor = Color3.new(1,0,0),
-        LineColor = Color3.new(1,1,0),
-        TextColor = Color3.new(0,1,0),
-        HPColor = Color3.new(0,1,0),
+        Enabled = true, Box = true, Line = true, Distance = true,
+        HP = true, Roles = true, Weapon = true, Name = true,
+        ThroughWalls = true, Crown = true, Pig = true,
+        Tracer = true, HealthBar = true, Direction = true,
+        MaxObjects = 25,
+        BoxColor = Color3.new(1,0,0), LineColor = Color3.new(1,1,0),
+        TextColor = Color3.new(0,1,0), HPColor = Color3.new(0,1,0),
         HPColorLow = Color3.new(1,0,0),
-        MaxObjects = 20,
-        ESPGlow = true, -- Свечение
-        ESPOutline = true, -- Обводка
     },
-    -- Визуалы (огромный выбор)
     Visuals = {
-        -- Прицел
-        CS = 180, -- Размер круга
-        CC = Color3.new(0,1,0), -- Цвет круга
-        CT = 0.3, -- Прозрачность круга
-        DotColor = Color3.new(1,0,0), -- Цвет точки
-        DotSize = 8, -- Размер точки
-        RingPulse = true, -- Пульсация кольца
-        RingSpeed = 1.0, -- Скорость пульсации
-        Crosshair = true, -- Крест
-        CrosshairSize = 15,
-        CrosshairColor = Color3.new(1,0,0),
-        
-        -- Эффекты
-        HitEffect = true,
-        ExplosionEffect = true,
-        ParticleEffect = true,
-        ScreenShake = true,
-        HitColor = Color3.new(1,0.8,0),
-        ExplosionColor = Color3.new(1,0.5,0.2),
-        
-        -- Дополнительно
-        ShowFPS = true,
-        ShowTime = true,
-        ShowPlayers = true,
-        ShowKills = true,
-        Minimap = false, -- Мини-карта (в разработке)
+        CircleSize = 200, CircleColor = Color3.new(0,1,0),
+        CircleTransparency = 0.2, DotColor = Color3.new(1,0,0),
+        DotSize = 10, RingPulse = true, Crosshair = true,
+        CrosshairSize = 20, CrosshairColor = Color3.new(1,0,0),
+        HitEffect = true, ExplosionEffect = true,
+        ParticleEffect = true, ScreenShake = true,
     },
-    -- Звуки
     Sound = {
-        E = true,
-        Fling = "rbxassetid://1234567890",
-        Hit = "rbxassetid://0987654321",
-        Kill = "rbxassetid://1122334455",
-        Headshot = "rbxassetid://5566778899",
-        Volume = 0.5,
+        Enabled = true, Volume = 0.6,
+        FlingSound = true, HitSound = true, KillSound = true,
     },
-    -- Оптимизация
-    Opt = {
-        UR = mob and 3 or 2,
-        ER = mob and 3 or 2,
-        LowEnd = mob,
-        MaxFPS = 60,
-        RenderDistance = 500,
+    Optimization = {
+        UpdateRate = isMobile and 3 or 2,
+        ESPUpdateRate = isMobile and 3 or 2,
+        LowEndMode = isMobile,
     },
-    -- Статистика
-    Stats = {
-        Kills = 0,
-        Deaths = 0,
-        Headshots = 0,
-        FlingKills = 0,
-        PlayTime = 0,
-        BestStreak = 0,
-    }
 }
 
 -- ===========================
 -- 📦 ПЕРЕМЕННЫЕ
 -- ===========================
-local gui, st, fc, flc, rc, rct, esp = nil, nil, 0, 0, {}, {}, {}
-local startTime = tick()
-local lastTarget = nil
-local targetLock = nil
-local switchTimer = 0
-
--- ===========================
--- 🎵 ЗВУКИ
--- ===========================
-local function crS(id, vol)
-    local s = Instance.new("Sound")
-    s.SoundId = id
-    s.Volume = vol or CF.Sound.Volume
-    s.Parent = SS
-    return s
-end
-local flingS = crS(CF.Sound.Fling, 0.6)
-local hitS = crS(CF.Sound.Hit, 0.4)
-local killS = crS(CF.Sound.Kill, 0.8)
-local headS = crS(CF.Sound.Headshot, 0.7)
+local screenGui, statusLabel, frameCounter, flingCooldown = nil, nil, 0, 0
+local roleCache, roleCacheTime, espObjects = {}, {}, {}
+local flingKills = 0
 
 -- ===========================
 -- 🎭 ОПРЕДЕЛЕНИЕ РОЛЕЙ
 -- ===========================
-local function gPR(t)
-    if not t or not t.Character then return "Обычный" end
-    local nw = tick()
-    if rc[t] and rct[t] and nw - rct[t] < 1 then return rc[t] end
-    local c, h = t.Character, t.Character:FindFirstChild("Humanoid")
-    if not h or h.Health <= 0 then rc[t]="Мертв"; rct[t]=nw; return "Мертв" end
-    local k, g = false, false
-    for _, ch in ipairs(c:GetChildren()) do
-        if ch:IsA("Tool") then
-            local nm = ch.Name:lower()
-            if nm:find("knife") or nm:find("dagger") or nm:find("blade") then k = true end
-            if nm:find("gun") or nm:find("pistol") or nm:find("revolver") then g = true end
+local function getPlayerRole(target)
+    if not target or not target.Character then return "Обычный" end
+    local now = tick()
+    if roleCache[target] and roleCacheTime[target] and now - roleCacheTime[target] < 1 then
+        return roleCache[target]
+    end
+    local char, hum = target.Character, target.Character:FindFirstChild("Humanoid")
+    if not hum or hum.Health <= 0 then
+        roleCache[target] = "Мертв"; roleCacheTime[target] = now; return "Мертв"
+    end
+    local hasKnife, hasGun = false, false
+    for _, child in ipairs(char:GetChildren()) do
+        if child:IsA("Tool") then
+            local n = child.Name:lower()
+            if n:find("knife") or n:find("dagger") or n:find("blade") then hasKnife = true end
+            if n:find("gun") or n:find("pistol") or n:find("revolver") then hasGun = true end
         end
     end
-    local rl = "👤 Обычный"
-    if k and not g then rl = "🔪 Убийца"
-    elseif g and not k then rl = "⭐ Шериф"
+    local role = "👤 Обычный"
+    if hasKnife and not hasGun then role = "🔪 Убийца"
+    elseif hasGun and not hasKnife then role = "⭐ Шериф"
     else
-        local a = h:GetAttribute("Role")
-        if a then
-            local r = a:lower()
-            if r:find("murder") or r:find("killer") then rl = "🔪 Убийца"
-            elseif r:find("sheriff") or r:find("detective") then rl = "⭐ Шериф" end
+        local attr = hum:GetAttribute("Role")
+        if attr then
+            local r = attr:lower()
+            if r:find("murder") or r:find("killer") then role = "🔪 Убийца"
+            elseif r:find("sheriff") or r:find("detective") then role = "⭐ Шериф"
+            end
         end
     end
-    rc[t] = rl; rct[t] = nw; return rl
+    roleCache[target] = role; roleCacheTime[target] = now; return role
 end
 
-local function isM(t) return gPR(t):find("Убийца") ~= nil end
+local function isMurderer(target)
+    return getPlayerRole(target):find("Убийца") ~= nil
+end
 
 -- ===========================
 -- 👑 КОРОНА
 -- ===========================
-local function gBP()
-    local b, bS = nil, -1
-    for _, o in ipairs(P:GetPlayers()) do
-        if o.Character then
-            local h = o.Character:FindFirstChild("Humanoid")
-            if h and h.Health > 0 then
-                local s = h.Health + #o.Character:GetChildren() * 10
-                if s > bS then b, bS = o, s end
+local function getBestPlayer()
+    local best, bestScore = nil, -1
+    for _, other in ipairs(Players:GetPlayers()) do
+        if other.Character then
+            local hum = other.Character:FindFirstChild("Humanoid")
+            if hum and hum.Health > 0 then
+                local score = hum.Health + #other.Character:GetChildren() * 10
+                if score > bestScore then best, bestScore = other, score end
             end
         end
     end
-    return b or pl
+    return best or player
 end
 
 -- ===========================
@@ -204,9 +159,7 @@ local function makeDraggable(frame)
     local dragStart, startPos, dragging = nil, nil, false
     frame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
+            dragging = true; dragStart = input.Position; startPos = frame.Position
         end
     end)
     frame.InputChanged:Connect(function(input)
@@ -228,362 +181,363 @@ local function makeDraggable(frame)
 end
 
 -- ===========================
--- 🖥️ МЕГА-GUI
+-- 🎨 ВИЗУАЛЫ
 -- ===========================
-local function crGUI()
-    gui = Instance.new("ScreenGui")
-    gui.Name = "PiskaUltraMakaGUI"
-    gui.Parent = pl.PlayerGui
-    gui.ResetOnSpawn = false
-    gui.DisplayOrder = 999
-
-    -- Верхняя панель
-    local tp = Instance.new("Frame")
-    tp.Size = UDim2.new(0, 350, 0, 60)
-    tp.Position = UDim2.new(0.01, 0, 0.01, 0)
-    tp.BackgroundColor3 = Color3.new(0.05, 0.05, 0.12)
-    tp.BackgroundTransparency = 0.15
-    tp.BorderSizePixel = 2
-    tp.BorderColor3 = Color3.new(0.3, 0.6, 1)
-    tp.Parent = gui
-    Instance.new("UICorner").CornerRadius = UDim.new(0, 12)
-    Instance.new("UICorner").Parent = tp
-    makeDraggable(tp)
-
-    -- Аватар
-    local av = Instance.new("ImageLabel")
-    av.Size = UDim2.new(0, 45, 0, 45)
-    av.Position = UDim2.new(0, 8, 0.5, -22.5)
-    av.BackgroundColor3 = Color3.new(0.2, 0.2, 0.3)
-    av.BorderSizePixel = 2
-    av.BorderColor3 = Color3.new(0.5, 0.8, 1)
-    av.Image = P:GetUserThumbnailAsync(pl.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
-    av.ClipsDescendants = true
-    av.Parent = tp
-    Instance.new("UICorner").CornerRadius = UDim.new(1, 0)
-    Instance.new("UICorner").Parent = av
-
-    -- Ник
-    local nk = Instance.new("TextLabel")
-    nk.Text = "👑 " .. pl.Name .. " 🐷"
-    nk.TextColor3 = Color3.new(1, 0.8, 0.2)
-    nk.TextScaled = true
-    nk.Size = UDim2.new(1, -70, 0.4, 0)
-    nk.Position = UDim2.new(0, 60, 0, 2)
-    nk.TextXAlignment = Enum.TextXAlignment.Left
-    nk.Font = Enum.Font.GothamBold
-    nk.BackgroundTransparency = 1
-    nk.Parent = tp
-
-    -- Статус
-    st = Instance.new("TextLabel")
-    st.Text = "🚀 МЕГА-ГОТОВ"
-    st.TextColor3 = Color3.new(0, 1, 0)
-    st.TextScaled = true
-    st.Size = UDim2.new(1, -70, 0.3, 0)
-    st.Position = UDim2.new(0, 60, 0.4, 0)
-    st.TextXAlignment = Enum.TextXAlignment.Left
-    st.Font = Enum.Font.Gotham
-    st.BackgroundTransparency = 1
-    st.Parent = tp
-
-    -- Версия
-    local vn = Instance.new("TextLabel")
-    vn.Text = "v17.0 | МЕГА"
-    vn.TextColor3 = Color3.new(0.5, 0.8, 1)
-    vn.TextScaled = true
-    vn.Size = UDim2.new(1, -70, 0.2, 0)
-    vn.Position = UDim2.new(0, 60, 0.7, 0)
-    vn.TextXAlignment = Enum.TextXAlignment.Left
-    vn.Font = Enum.Font.Gotham
-    vn.BackgroundTransparency = 1
-    vn.Parent = tp
-
-    -- Кнопка меню
-    local mb = Instance.new("TextButton")
-    mb.Text = "⚙"
-    mb.TextColor3 = Color3.new(1, 1, 1)
-    mb.TextScaled = true
-    mb.Size = UDim2.new(0, 40, 0, 40)
-    mb.Position = UDim2.new(0.01, 0, 0.11, 0)
-    mb.BackgroundColor3 = Color3.new(0.15, 0.15, 0.25)
-    mb.BorderSizePixel = 2
-    mb.BorderColor3 = Color3.new(0.5, 0.8, 1)
-    mb.Font = Enum.Font.GothamBlack
-    mb.Parent = gui
-    Instance.new("UICorner").CornerRadius = UDim.new(1, 0)
-    Instance.new("UICorner").Parent = mb
-    makeDraggable(mb)
-
-    -- ===== КРУГЛЫЙ ПРИЦЕЛ (БЕЗ КВАДРАТОВ) =====
-    local ac = Instance.new("Frame")
-    ac.Size = UDim2.new(0, CF.Visuals.CS, 0, CF.Visuals.CS)
-    ac.Position = UDim2.new(0.5, -CF.Visuals.CS/2, 0.5, -CF.Visuals.CS/2)
-    ac.BackgroundColor3 = CF.Visuals.CC
-    ac.BackgroundTransparency = CF.Visuals.CT
-    ac.BorderSizePixel = 0
-    ac.Parent = gui
-    -- Сделать круглым
-    local acCorner = Instance.new("UICorner")
-    acCorner.CornerRadius = UDim.new(1, 0)
-    acCorner.Parent = ac
-    makeDraggable(ac)
-
-    -- Внешнее кольцо (круглое)
-    local orr = Instance.new("Frame")
-    orr.Size = UDim2.new(1.5, 0, 1.5, 0)
-    orr.Position = UDim2.new(-0.25, 0, -0.25, 0)
-    orr.BackgroundColor3 = CF.Visuals.CC
-    orr.BackgroundTransparency = 0.85
-    orr.BorderSizePixel = 2
-    orr.BorderColor3 = CF.Visuals.CC
-    orr.Parent = ac
-    local orrCorner = Instance.new("UICorner")
-    orrCorner.CornerRadius = UDim.new(1, 0)
-    orrCorner.Parent = orr
-
-    -- Точка
-    local dt = Instance.new("Frame")
-    dt.Size = UDim2.new(0, CF.Visuals.DotSize, 0, CF.Visuals.DotSize)
-    dt.Position = UDim2.new(0.5, -CF.Visuals.DotSize/2, 0.5, -CF.Visuals.DotSize/2)
-    dt.BackgroundColor3 = CF.Visuals.DotColor
-    dt.BackgroundTransparency = 0
-    dt.BorderSizePixel = 0
-    dt.Parent = ac
-    local dtCorner = Instance.new("UICorner")
-    dtCorner.CornerRadius = UDim.new(1, 0)
-    dtCorner.Parent = dt
-
-    -- Крест (опционально)
-    if CF.Visuals.Crosshair then
-        local cs = CF.Visuals.CrosshairSize
-        local cc = CF.Visuals.CrosshairColor
-        for _, pos in ipairs({
-            {0.5, -cs/2, 0, -cs/2}, {0.5, -cs/2, 0, cs/2},
-            {0, -cs/2, 0.5, -cs/2}, {0, cs/2, 0.5, -cs/2}
-        }) do
-            local cr = Instance.new("Frame")
-            cr.Size = UDim2.new(0, cs, 0, 2)
-            cr.Position = UDim2.new(pos[1], pos[2], pos[3], pos[4])
-            cr.BackgroundColor3 = cc
-            cr.BackgroundTransparency = 0
-            cr.BorderSizePixel = 0
-            cr.Parent = ac
+local function createExplosion(position, color, size)
+    if not CONFIG.Visuals.ExplosionEffect then return end
+    local flash = Instance.new("Frame")
+    flash.Size = UDim2.new(0, size or 300, 0, size or 300)
+    flash.Position = position or UDim2.new(0.5, -150, 0.5, -150)
+    flash.BackgroundColor3 = color or Color3.new(1, 0.8, 0.2)
+    flash.BackgroundTransparency = 0.3
+    flash.BorderSizePixel = 0
+    flash.Parent = screenGui
+    TweenService:Create(flash, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}
+    ):Play()
+    Debris:AddItem(flash, 0.6)
+    if CONFIG.Visuals.ParticleEffect then
+        for i = 1, 30 do
+            local p = Instance.new("Frame")
+            local ps = math.random(3, 15)
+            p.Size = UDim2.new(0, ps, 0, ps)
+            p.Position = UDim2.new(0.5 + math.random(-30,30)/100, 0, 0.5 + math.random(-30,30)/100, 0)
+            p.BackgroundColor3 = Color3.new(math.random(), math.random(), math.random())
+            p.BorderSizePixel = 0; p.Rotation = math.random(0, 360); p.Parent = screenGui
+            TweenService:Create(p, TweenInfo.new(0.8 + math.random()/2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {Position = UDim2.new(0.5 + math.random(-70,70)/100, 0, 0.5 + math.random(-70,70)/100, 0), BackgroundTransparency = 1}
+            ):Play()
+            Debris:AddItem(p, 1)
         end
     end
-
-    -- ===== МЕНЮ (ОГРОМНОЕ) =====
-    local mm = Instance.new("Frame")
-    mm.Size = UDim2.new(0, 400, 0, 500)
-    mm.Position = UDim2.new(0.01, 0, 0.2, 0)
-    mm.BackgroundColor3 = Color3.new(0.03, 0.03, 0.08)
-    mm.BackgroundTransparency = 0.1
-    mm.BorderSizePixel = 2
-    mm.BorderColor3 = Color3.new(0.3, 0.6, 1)
-    mm.Visible = false
-    mm.Parent = gui
-    Instance.new("UICorner").CornerRadius = UDim.new(0, 15)
-    Instance.new("UICorner").Parent = mm
-    makeDraggable(mm)
-
-    -- Заголовок
-    local tl = Instance.new("TextLabel")
-    tl.Text = "🐷 ПИСКА УЛЬТРА МАКА 👑"
-    tl.TextColor3 = Color3.new(1, 0.8, 0.2)
-    tl.TextScaled = true
-    tl.BackgroundColor3 = Color3.new(0.1, 0.1, 0.2)
-    tl.BackgroundTransparency = 0.3
-    tl.BorderSizePixel = 1
-    tl.BorderColor3 = Color3.new(0.5, 0.3, 0.1)
-    tl.Size = UDim2.new(1, -10, 0, 30)
-    tl.Position = UDim2.new(0, 5, 0, 2)
-    tl.Font = Enum.Font.GothamBlack
-    tl.Parent = mm
-
-    -- Скролл
-    local sc = Instance.new("ScrollingFrame")
-    sc.Size = UDim2.new(1, -10, 1, -40)
-    sc.Position = UDim2.new(0, 5, 0, 35)
-    sc.BackgroundTransparency = 1
-    sc.BorderSizePixel = 0
-    sc.CanvasSize = UDim2.new(0, 0, 0, 0)
-    sc.ScrollBarThickness = 8
-    sc.ScrollBarImageColor3 = Color3.new(0.3, 0.6, 1)
-    sc.Parent = mm
-
-    local lst = Instance.new("UIListLayout")
-    lst.Padding = UDim.new(0, 4)
-    lst.FillDirection = Enum.FillDirection.Vertical
-    lst.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    lst.Parent = sc
-
-    mb.MouseButton1Click:Connect(function() mm.Visible = not mm.Visible end)
-    mb.TouchTap:Connect(function() mm.Visible = not mm.Visible end)
-
-    -- ===== ФУНКЦИИ СОЗДАНИЯ GUI =====
-    local function cat(t, i)
-        local f = Instance.new("Frame")
-        f.Size = UDim2.new(0, 370, 0, 28)
-        f.BackgroundColor3 = Color3.new(0.15, 0.15, 0.25)
-        f.BackgroundTransparency = 0.3
-        f.BorderSizePixel = 1
-        f.BorderColor3 = Color3.new(0.3, 0.5, 0.8)
-        f.Parent = lst
-        local l = Instance.new("TextLabel")
-        l.Text = i .. " " .. t
-        l.TextColor3 = Color3.new(0.8, 0.9, 1)
-        l.TextScaled = true
-        l.BackgroundTransparency = 1
-        l.Size = UDim2.new(1, 0, 1, 0)
-        l.Font = Enum.Font.GothamBold
-        l.Parent = f
+    if CONFIG.Visuals.ScreenShake then
+        local shake = Instance.new("Frame"); shake.Size = UDim2.new(1,0,1,0); shake.BackgroundTransparency = 1; shake.Parent = screenGui
+        for i = 1, 10 do shake.Position = UDim2.new(math.random(-4,4)/100, 0, math.random(-4,4)/100, 0); task.wait(0.02) end
+        shake:Destroy()
     end
+    if CONFIG.Sound.Enabled then playSound("rbxassetid://6677889900", 0.7) end
+end
 
-    local function tog(p, t, cfg, k, ic)
-        local f = Instance.new("Frame")
-        f.Size = UDim2.new(0, 370, 0, 26)
-        f.BackgroundColor3 = Color3.new(0.08, 0.08, 0.12)
-        f.BackgroundTransparency = 0.2
-        f.BorderSizePixel = 0
-        f.Parent = p
-        local l = Instance.new("TextLabel")
-        l.Text = (ic or "⬜") .. " " .. t
-        l.TextColor3 = Color3.new(0.8, 0.9, 1)
-        l.TextScaled = true
-        l.BackgroundTransparency = 1
-        l.Size = UDim2.new(0.6, 0, 1, 0)
-        l.Position = UDim2.new(0, 5, 0, 0)
-        l.TextXAlignment = Enum.TextXAlignment.Left
-        l.Font = Enum.Font.GothamSemibold
-        l.Parent = f
-        local b = Instance.new("TextButton")
-        local s = cfg[k]
-        b.Text = s and "ON" or "OFF"
-        b.TextColor3 = Color3.new(1, 1, 1)
-        b.TextScaled = true
-        b.Size = UDim2.new(0.25, 0, 0.8, 0)
-        b.Position = UDim2.new(0.73, 0, 0.1, 0)
-        b.BackgroundColor3 = s and Color3.new(0.2, 0.7, 0.3) or Color3.new(0.7, 0.2, 0.2)
-        b.BorderSizePixel = 1
-        b.BorderColor3 = Color3.new(0.5, 0.5, 0.5)
-        b.Font = Enum.Font.GothamBold
-        b.Parent = f
-        b.MouseButton1Click:Connect(function()
-            s = not s; cfg[k] = s
-            b.Text = s and "ON" or "OFF"
-            b.BackgroundColor3 = s and Color3.new(0.2, 0.7, 0.3) or Color3.new(0.7, 0.2, 0.2)
-            if st then st.Text = "🔄 " .. t .. " " .. (s and "ON" or "OFF"); task.wait(0.15); st.Text = "🚀 МЕГА-ГОТОВ" end
-        end)
-        b.TouchTap:Connect(function()
-            s = not s; cfg[k] = s
-            b.Text = s and "ON" or "OFF"
-            b.BackgroundColor3 = s and Color3.new(0.2, 0.7, 0.3) or Color3.new(0.7, 0.2, 0.2)
-            if st then st.Text = "🔄 " .. t .. " " .. (s and "ON" or "OFF"); task.wait(0.15); st.Text = "🚀 МЕГА-ГОТОВ" end
-        end)
+local function createHitEffect(targetPos)
+    if not CONFIG.Visuals.HitEffect then return end
+    local viewport = Camera.ViewportSize
+    local center = Vector2.new(viewport.X/2, viewport.Y/2)
+    local line = Drawing.new("Line")
+    line.Thickness = 5; line.Color = Color3.new(1,0.8,0); line.From = center; line.To = center + Vector2.new(math.random(-50,50), math.random(-50,50)); line.Visible = true; line.Transparency = 0.3
+    for i = 1, 20 do
+        line.From = Vector2.new(center.X + math.random(-20,20), center.Y + math.random(-20,20))
+        line.To = Vector2.new(targetPos.X + math.random(-20,20), targetPos.Y + math.random(-20,20))
+        line.Transparency = i / 20; task.wait(0.015)
     end
+    line:Remove()
+    local glow = Instance.new("Frame"); glow.Size = UDim2.new(0,80,0,80); glow.Position = UDim2.new(targetPos.X/viewport.X - 0.05, 0, targetPos.Y/viewport.Y - 0.05, 0); glow.BackgroundColor3 = Color3.new(1,0.5,0); glow.BackgroundTransparency = 0.5; glow.BorderSizePixel = 0; glow.Parent = screenGui
+    TweenService:Create(glow, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0,0,0,0), BackgroundTransparency = 1}):Play()
+    Debris:AddItem(glow, 0.5)
+end
 
-    local function sli(p, t, cfg, k, min, max, def, fmt, ic)
-        local f = Instance.new("Frame")
-        f.Size = UDim2.new(0, 370, 0, 36)
-        f.BackgroundColor3 = Color3.new(0.08, 0.08, 0.12)
-        f.BackgroundTransparency = 0.2
-        f.BorderSizePixel = 0
-        f.Parent = p
-        cfg[k] = def
-        local l = Instance.new("TextLabel")
-        l.Text = (ic or "⚙") .. " " .. t .. ": " .. (fmt and fmt(def) or tostring(def))
-        l.TextColor3 = Color3.new(0.8, 0.9, 1)
-        l.TextScaled = true
-        l.BackgroundTransparency = 1
-        l.Size = UDim2.new(1, 0, 0.35, 0)
-        l.Position = UDim2.new(0, 0, 0, 0)
-        l.Font = Enum.Font.GothamSemibold
-        l.Parent = f
-        local s = Instance.new("Frame")
-        s.Size = UDim2.new(0.85, 0, 0.3, 0)
-        s.Position = UDim2.new(0.075, 0, 0.5, 0)
-        s.BackgroundColor3 = Color3.new(0.15, 0.15, 0.2)
-        s.BorderSizePixel = 0
-        s.Parent = f
-        local fl = Instance.new("Frame")
-        fl.Size = UDim2.new((def - min) / (max - min), 0, 1, 0)
-        fl.BackgroundColor3 = Color3.new(0.2, 0.6, 0.8)
-        fl.BorderSizePixel = 0
-        fl.Parent = s
-        local d = Instance.new("TextButton")
-        d.Text = ""
-        d.Size = UDim2.new(0, 10, 1.5, 0)
-        d.Position = UDim2.new((def - min) / (max - min) - 0.025, 0, -0.25, 0)
-        d.BackgroundColor3 = Color3.new(1, 1, 1)
-        d.BorderSizePixel = 1
-        d.BorderColor3 = Color3.new(0.3, 0.8, 1)
-        d.Parent = s
-        local dr = false
-        d.MouseButton1Down:Connect(function() dr = true end)
-        d.MouseButton1Up:Connect(function() dr = false end)
-        d.TouchTap:Connect(function()
-            local nv = min + (max - min) * 0.5
-            fl.Size = UDim2.new(0.5, 0, 1, 0)
-            d.Position = UDim2.new(0.475, 0, -0.25, 0)
-            cfg[k] = nv
-            l.Text = (ic or "⚙") .. " " .. t .. ": " .. (fmt and fmt(nv) or tostring(nv))
-        end)
-        UIS.InputChanged:Connect(function(i)
-            if dr and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-                local rx = math.clamp((i.Position.X - s.AbsolutePosition.X) / s.AbsoluteSize.X, 0, 1)
-                local v = min + (max - min) * rx
-                fl.Size = UDim2.new(rx, 0, 1, 0)
-                d.Position = UDim2.new(math.clamp(rx - 0.025, 0, 0.95), 0, -0.25, 0)
-                cfg[k] = v
-                l.Text = (ic or "⚙") .. " " .. t .. ": " .. (fmt and fmt(v) or tostring(v))
+-- ===========================
+-- 💥 ФЛИНГ
+-- ===========================
+local function flingPlayer(target)
+    if not target or not target.Character then return end
+    if tick() - flingCooldown < CONFIG.Fling.Cooldown then return end
+    local char, root, hum = target.Character, target.Character:FindFirstChild("HumanoidRootPart"), target.Character:FindFirstChild("Humanoid")
+    if not root or not hum or hum.Health <= 0 then return end
+    local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not playerRoot then return end
+    local direction, distance = (root.Position - playerRoot.Position).Unit, (root.Position - playerRoot.Position).Magnitude
+    if distance > CONFIG.Fling.Radius then return end
+    flingCooldown = tick()
+    local power = CONFIG.Fling.Power * (1 - math.min(distance / CONFIG.Fling.Radius, 0.7))
+    root.Velocity = direction * power + Vector3.new(0, CONFIG.Fling.Upward + math.random(30, 80), 0)
+    root.Velocity = root.Velocity + Vector3.new(math.random(-80,80), math.random(30,70), math.random(-80,80))
+    local screenPos, onScreen = Camera:WorldToViewportPoint(root.Position)
+    if onScreen then
+        createHitEffect(Vector2.new(screenPos.X, screenPos.Y))
+        createExplosion(UDim2.new(0.5,0,0.5,0), Color3.new(1,0.5,0.2), 300)
+    end
+    if CONFIG.Sound.Enabled and CONFIG.Sound.FlingSound then playSound("rbxassetid://1234567890", 0.6) end
+    if CONFIG.Fling.ChainFling then
+        for _, other in ipairs(Players:GetPlayers()) do
+            if other ~= player and other ~= target and other.Character then
+                local otherRoot = other.Character:FindFirstChild("HumanoidRootPart")
+                if otherRoot and (otherRoot.Position - root.Position).Magnitude < 25 then
+                    task.wait(0.05); flingPlayer(other)
+                end
             end
-        end)
+        end
     end
+    flingKills = flingKills + 1
+    if statusLabel then statusLabel.Text = "💥 ФЛИНГ! x" .. flingKills; task.wait(0.3); statusLabel.Text = "🚀 МЕГА-ГОТОВ" end
+end
 
-    -- ===== КАТЕГОРИИ И ЭЛЕМЕНТЫ =====
-    cat("🎯 АИМБОТ", "🎯")
-    tog(lst, "Включить", CF.Aim, "E", "🎯")
-    sli(lst, "Дистанция", CF.Aim, "MD", 50, 800, 500, function(v) return math.floor(v) .. "m" end, "📏")
-    sli(lst, "FOV", CF.Aim, "F", 10, 360, 360, function(v) return math.floor(v) .. "°" end, "👁")
-    sli(lst, "Плавность", CF.Aim, "Sm", 0.01, 0.5, 0.2, function(v) return string.format("%.2f", v) end, "🌀")
-    sli(lst, "Предугад.", CF.Aim, "Pr", 0, 1, 0.5, function(v) return string.format("%.1fс", v) end, "⏱")
-    sli(lst, "Скорость", CF.Aim, "ASp", 0.1, 3, 1.5, function(v) return string.format("%.1fx", v) end, "⚡")
-    tog(lst, "TeamCheck", CF.Aim, "TC", "🔪")
-    tog(lst, "Видимость", CF.Aim, "VC", "👀")
-    tog(lst, "WallHack", CF.Aim, "WH", "🧱")
-    tog(lst, "LockOn", CF.Aim, "LockOn", "🔒")
-    tog(lst, "AimAssist", CF.Aim, "AimAssist", "🎯")
+-- ===========================
+-- 🎯 АИМБОТ
+-- ===========================
+local function getValidTargets()
+    local targets = {}
+    local camPos = Camera.CFrame.Position
+    local viewport = Camera.ViewportSize
+    local center = Vector2.new(viewport.X/2, viewport.Y/2)
+    for _, other in ipairs(Players:GetPlayers()) do
+        if other ~= player and other.Character then
+            local char = other.Character; local hum = char:FindFirstChild("Humanoid")
+            if not hum or hum.Health <= 0 then continue end
+            local part = char:FindFirstChild(CONFIG.Aim.HitboxPart) or char:FindFirstChild("HumanoidRootPart")
+            if not part then continue end
+            local pos = part.Position; local distance = (pos - camPos).Magnitude
+            if distance > CONFIG.Aim.MaxDistance then continue end
+            local screenPos, onScreen = Camera:WorldToViewportPoint(pos)
+            if not onScreen and not CONFIG.Aim.WallHack then continue end
+            if not CONFIG.Aim.WallHack and CONFIG.Aim.VisibleCheck then
+                local params = RaycastParams.new(); params.FilterType = Enum.RaycastFilterType.Blacklist; params.FilterDescendantsInstances = {player.Character, Camera}
+                if workspace:Raycast(camPos, (pos - camPos).Unit * distance, params) then continue end
+            end
+            if CONFIG.Aim.TeamCheck and not isMurderer(other) then continue end
+            table.insert(targets, {Player=other, Part=part, Position=pos, Distance=distance, Character=char, Humanoid=hum, Role=getPlayerRole(other), ScreenPos=Vector2.new(screenPos.X, screenPos.Y), Angle=math.deg(math.atan2(math.sqrt((screenPos.X-center.X)^2+(screenPos.Y-center.Y)^2), screenPos.Z))})
+        end
+    end
+    return targets
+end
 
-    cat("💥 ФЛИНГ", "💥")
-    tog(lst, "Включить", CF.Fling, "E", "💥")
-    sli(lst, "Сила", CF.Fling, "P", 50, 600, 300, function(v) return math.floor(v) end, "💪")
-    sli(lst, "Радиус", CF.Fling, "R", 10, 120, 60, function(v) return math.floor(v) .. "m" end, "📐")
-    sli(lst, "Вертикаль", CF.Fling, "U", 20, 300, 150, function(v) return math.floor(v) end, "⬆")
-    sli(lst, "Кулдаун", CF.Fling, "Co", 0.3, 3, 0.6, function(v) return string.format("%.1fс", v) end, "⏱")
-    tog(lst, "Цепная реакция", CF.Fling, "Ch", "⛓")
-    tog(lst, "Взрыв", CF.Fling, "Ex", "💥")
-    tog(lst, "Частицы", CF.Fling, "Particles", "✨")
-    tog(lst, "Тряска", CF.Fling, "ScreenShake", "🌊")
-    tog(lst, "Авто-флинг", CF.Fling, "AutoFling", "🤖")
-    tog(lst, "Флинг всех", CF.Fling, "FlingAll", "🌍")
+local function getBestTarget()
+    local targets = getValidTargets()
+    if #targets == 0 then return nil end
+    local center = Camera.ViewportSize / 2
+    local best = nil; local bestScore = math.huge
+    for _, t in ipairs(targets) do
+        local dx = t.ScreenPos.X - center.X; local dy = t.ScreenPos.Y - center.Y
+        local angle = math.deg(math.atan2(math.sqrt(dx^2 + dy^2), t.Distance))
+        if angle > CONFIG.Aim.FOV then continue end
+        local priority = 0
+        if CONFIG.Aim.PriorityMode == "Danger" then
+            if t.Role:find("Убийца") then priority = 0 elseif t.Role:find("Шериф") then priority = 50 else priority = 100 end
+        elseif CONFIG.Aim.PriorityMode == "Distance" then priority = t.Distance else priority = angle * 2 end
+        local score = priority + t.Distance * 0.05 + angle * 1.5
+        if score < bestScore then best, bestScore = t, score end
+    end
+    return best
+end
 
-    cat("👁 ESP", "👁")
-    tog(lst, "Включить", CF.ESP, "E", "👁")
-    tog(lst, "Рамка", CF.ESP, "B", "⬜")
-    tog(lst, "Линия", CF.ESP, "L", "〰️")
-    tog(lst, "Дистанция", CF.ESP, "D", "📏")
-    tog(lst, "HP", CF.ESP, "HP", "❤️")
-    tog(lst, "Роли", CF.ESP, "R", "🔪")
-    tog(lst, "Оружие", CF.ESP, "W", "🔫")
-    tog(lst, "Ник", CF.ESP, "N", "👤")
-    tog(lst, "Корона", CF.ESP, "C", "👑")
-    tog(lst, "Свиньи", CF.ESP, "Pig", "🐷")
-    tog(lst, "Tracer", CF.ESP, "Tracer", "📌")
-    tog(lst, "HealthBar", CF.ESP, "HealthBar", "📊")
-    tog(lst, "Направление", CF.ESP, "Direction", "🧭")
+local function aimAt(target)
+    if not target or not target.Part then return end
+    local targetPos = target.Part.Position
+    if CONFIG.Aim.Prediction > 0 and target.Character then
+        local root = target.Character:FindFirstChild("HumanoidRootPart")
+        if root and root.Velocity then targetPos = targetPos + root.Velocity * CONFIG.Aim.Prediction * 1.5 end
+    end
+    local camPos = Camera.CFrame.Position
+    local direction = (targetPos - camPos).Unit
+    if CONFIG.Aim.RecoilCompensation > 0 then direction = direction + Vector3.new(0, CONFIG.Aim.RecoilCompensation * 0.008, 0) end
+    local targetCFrame = CFrame.lookAt(camPos, camPos + direction)
+    local smooth = CONFIG.Aim.Smoothness
+    if CONFIG.Aim.AdaptiveSmooth then
+        local factor = math.clamp((targetPos - camPos).Magnitude / CONFIG.Aim.MaxDistance, 0.3, 1)
+        smooth = smooth * factor * CONFIG.Aim.AimSpeed
+        smooth = math.clamp(smooth, 0.01, 0.5)
+    end
+    Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, smooth)
+end
 
-    cat("🎨 ВИЗУАЛЫ", "🎨")
-    sli(lst, "Размер круга", CF.Visuals, "CS", 50, 400, 180, function(v) return math.floor(v) .. "px" end, "⭕")
-    sli(lst, "Размер точки", CF.Visuals, "DotSize", 2, 20, 8, function(v) return math.floor(v) .. "px" end, "🔴")
-    tog(lst, "Пульсация", CF.Visuals, "RingPulse", "🌀")
-    tog(lst, "Крест", CF.Visuals, "Crosshair", "✚
+-- ===========================
+-- 👁 ESP
+-- ===========================
+local function createEspObject(target)
+    if not target or espObjects[target] or #espObjects >= CONFIG.ESP.MaxObjects then return end
+    local obj = {}
+    if CONFIG.ESP.Box then obj.Box = Drawing.new("Square"); obj.Box.Thickness = 2; obj.Box.Filled = false; obj.Box.Visible = false end
+    if CONFIG.ESP.Line then obj.Line = Drawing.new("Line"); obj.Line.Thickness = 1; obj.Line.Visible = false end
+    if CONFIG.ESP.Distance then obj.Dist = Drawing.new("Text"); obj.Dist.Size = 14; obj.Dist.Center = true; obj.Dist.Visible = false; obj.Dist.Font = 3 end
+    if CONFIG.ESP.HP then obj.HPBar = Drawing.new("Square"); obj.HPBar.Thickness = 2; obj.HPBar.Filled = true; obj.HPBar.Visible = false; obj.HPText = Drawing.new("Text"); obj.HPText.Size = 12; obj.HPText.Color = Color3.new(1,1,1); obj.HPText.Center = true; obj.HPText.Visible = false; obj.HPText.Font = 3 end
+    if CONFIG.ESP.Roles or CONFIG.ESP.Name or CONFIG.ESP.Weapon then obj.Info = Drawing.new("Text"); obj.Info.Size = 16; obj.Info.Center = true; obj.Info.Font = 3; obj.Info.Visible = false end
+    if CONFIG.ESP.Direction then obj.Dir = Drawing.new("Line"); obj.Dir.Thickness = 2; obj.Dir.Visible = false end
+    espObjects[target] = obj
+end
+
+local function updateEspObject(target, obj, screenPos, distance, hp, role)
+    if not target or not obj or not target.Character then
+        for _, v in pairs(obj) do if v then v.Visible = false end end
+        return
+    end
+    local char, root, head = target.Character, target.Character:FindFirstChild("HumanoidRootPart"), target.Character:FindFirstChild("Head")
+    if not root or not head then return end
+    local headPos, onScreen = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0))
+    local footPos = Camera:WorldToViewportPoint(root.Position - Vector3.new(0, 2, 0))
+    if not onScreen and not CONFIG.ESP.ThroughWalls then
+        for _, v in pairs(obj) do if v then v.Visible = false end end
+        return
+    end
+    local height, width = math.abs(headPos.Y - footPos.Y), math.abs(headPos.Y - footPos.Y) * 0.5
+    local centerX, topY = (headPos.X + footPos.X) / 2, math.min(headPos.Y, footPos.Y) - height * 0.2
+    if CONFIG.ESP.Box and obj.Box then
+        obj.Box.Visible = true; obj.Box.Position = Vector2.new(centerX - width/2, topY); obj.Box.Size = Vector2.new(width, height * 1.2)
+        obj.Box.Color = (CONFIG.ESP.ThroughWalls and not onScreen) and Color3.new(0.5,0.5,1) or CONFIG.ESP.BoxColor
+        obj.Box.Transparency = (CONFIG.ESP.ThroughWalls and not onScreen) and 0.3 or 0
+    end
+    if CONFIG.ESP.Line and obj.Line then
+        local viewport = Camera.ViewportSize
+        obj.Line.Visible = true; obj.Line.From = Vector2.new(viewport.X/2, viewport.Y/2); obj.Line.To = Vector2.new(screenPos.X, screenPos.Y)
+        obj.Line.Color = CONFIG.ESP.LineColor
+    end
+    if CONFIG.ESP.Distance and obj.Dist then
+        obj.Dist.Visible = true; obj.Dist.Position = Vector2.new(screenPos.X, screenPos.Y - 30); obj.Dist.Text = math.floor(distance) .. "m"
+        obj.Dist.Color = CONFIG.ESP.TextColor
+    end
+    if CONFIG.ESP.HP and obj.HPBar then
+        local barY, barWidth, barHeight = topY - 8, width * 0.8, 4
+        obj.HPBar.Visible = true; obj.HPBar.Position = Vector2.new(centerX - barWidth/2, barY); obj.HPBar.Size = Vector2.new(barWidth * (hp / 100), barHeight)
+        obj.HPBar.Color = hp > 50 and CONFIG.ESP.HPColor or CONFIG.ESP.HPColorLow
+        if obj.HPText then obj.HPText.Visible = true; obj.HPText.Position = Vector2.new(centerX, barY - 10); obj.HPText.Text = math.floor(hp) .. "%" end
+    end
+    if obj.Info then
+        obj.Info.Visible = true
+        local info = ""
+        if CONFIG.ESP.Roles then info = info .. role end
+        if CONFIG.ESP.Name then info = info .. " " .. target.Name end
+        if CONFIG.ESP.Weapon then
+            local weapon = "Нет"
+            for _, child in ipairs(char:GetChildren()) do if child:IsA("Tool") then weapon = child.Name; break end end
+            info = info .. " [" .. weapon .. "]"
+        end
+        if CONFIG.ESP.Crown and target == getBestPlayer() then info = "👑 " .. info end
+        if CONFIG.ESP.Pig and target ~= getBestPlayer() then info = info .. " 🐷" end
+        obj.Info.Text = info; obj.Info.Position = Vector2.new(centerX, topY - 30 - height * 0.3)
+        if role:find("Убийца") then obj.Info.Color = Color3.new(1,0,0) elseif role:find("Шериф") then obj.Info.Color = Color3.new(0,0.5,1) else obj.Info.Color = Color3.new(0,1,0) end
+    end
+    if CONFIG.ESP.Direction and obj.Dir and root.Velocity then
+        local vel = root.Velocity
+        if vel.Magnitude > 1 then
+            local dir = vel.Unit; local endPos = screenPos + Vector2.new(dir.X * 30, dir.Y * 30)
+            obj.Dir.Visible = true; obj.Dir.From = Vector2.new(screenPos.X, screenPos.Y); obj.Dir.To = Vector2.new(endPos.X, endPos.Y)
+            obj.Dir.Color = Color3.new(0, 1, 1)
+        else obj.Dir.Visible = false end
+    end
+end
+
+local function clearEsp()
+    for _, obj in pairs(espObjects) do for _, v in pairs(obj) do if v then v.Visible = false end end end
+end
+
+-- ===========================
+-- 🖥️ GUI
+-- ===========================
+local function createGUI()
+    screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "PiskaUltraMakaGUI"
+    screenGui.Parent = player.PlayerGui
+    screenGui.ResetOnSpawn = false
+    screenGui.DisplayOrder = 999
+
+    -- Верхняя панель
+    local topPanel = Instance.new("Frame")
+    topPanel.Size = UDim2.new(0, 350, 0, 60)
+    topPanel.Position = UDim2.new(0.01, 0, 0.01, 0)
+    topPanel.BackgroundColor3 = Color3.new(0.05, 0.05, 0.12)
+    topPanel.BackgroundTransparency = 0.15
+    topPanel.BorderSizePixel = 2
+    topPanel.BorderColor3 = Color3.new(0.3, 0.6, 1)
+    topPanel.Parent = screenGui
+    Instance.new("UICorner").CornerRadius = UDim.new(0, 12)
+    Instance.new("UICorner").Parent = topPanel
+    makeDraggable(topPanel)
+
+    -- Аватар
+    local avatar = Instance.new("ImageLabel")
+    avatar.Size = UDim2.new(0, 45, 0, 45)
+    avatar.Position = UDim2.new(0, 8, 0.5, -22.5)
+    avatar.BackgroundColor3 = Color3.new(0.2, 0.2, 0.3)
+    avatar.BorderSizePixel = 2
+    avatar.BorderColor3 = Color3.new(0.5, 0.8, 1)
+    avatar.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+    avatar.ClipsDescendants = true
+    avatar.Parent = topPanel
+    Instance.new("UICorner").CornerRadius = UDim.new(1, 0)
+    Instance.new("UICorner").Parent = avatar
+
+    -- Ник
+    local nick = Instance.new("TextLabel")
+    nick.Text = "👑 " .. player.Name .. " 🐷"
+    nick.TextColor3 = Color3.new(1, 0.8, 0.2)
+    nick.TextScaled = true
+    nick.Size = UDim2.new(1, -70, 0.4, 0)
+    nick.Position = UDim2.new(0, 60, 0, 2)
+    nick.TextXAlignment = Enum.TextXAlignment.Left
+    nick.Font = Enum.Font.GothamBold
+    nick.BackgroundTransparency = 1
+    nick.Parent = topPanel
+
+    -- Статус
+    statusLabel = Instance.new("TextLabel")
+    statusLabel.Text = "🚀 МЕГА-ГОТОВ"
+    statusLabel.TextColor3 = Color3.new(0, 1, 0)
+    statusLabel.TextScaled = true
+    statusLabel.Size = UDim2.new(1, -70, 0.3, 0)
+    statusLabel.Position = UDim2.new(0, 60, 0.4, 0)
+    statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+    statusLabel.Font = Enum.Font.Gotham
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.Parent = topPanel
+
+    -- Версия
+    local version = Instance.new("TextLabel")
+    version.Text = "v18.0 | МЕГА"
+    version.TextColor3 = Color3.new(0.5, 0.8, 1)
+    version.TextScaled = true
+    version.Size = UDim2.new(1, -70, 0.2, 0)
+    version.Position = UDim2.new(0, 60, 0.7, 0)
+    version.TextXAlignment = Enum.TextXAlignment.Left
+    version.Font = Enum.Font.Gotham
+    version.BackgroundTransparency = 1
+    version.Parent = topPanel
+
+    -- Кнопка меню
+    local menuBtn = Instance.new("TextButton")
+    menuBtn.Text = "⚙"
+    menuBtn.TextColor3 = Color3.new(1, 1, 1)
+    menuBtn.TextScaled = true
+    menuBtn.Size = UDim2.new(0, 40, 0, 40)
+    menuBtn.Position = UDim2.new(0.01, 0, 0.11, 0)
+    menuBtn.BackgroundColor3 = Color3.new(0.15, 0.15, 0.25)
+    menuBtn.BorderSizePixel = 2
+    menuBtn.BorderColor3 = Color3.new(0.5, 0.8, 1)
+    menuBtn.Font = Enum.Font.GothamBlack
+    menuBtn.Parent = screenGui
+    Instance.new("UICorner").CornerRadius = UDim.new(1, 0)
+    Instance.new("UICorner").Parent = menuBtn
+    makeDraggable(menuBtn)
+
+    -- Прицел
+    local aimCircle = Instance.new("Frame")
+    aimCircle.Size = UDim2.new(0, CONFIG.Visuals.CircleSize, 0, CONFIG.Visuals.CircleSize)
+    aimCircle.Position = UDim2.new(0.5, -CONFIG.Visuals.CircleSize/2, 0.5, -CONFIG.Visuals.CircleSize/2)
+    aimCircle.BackgroundColor3 = CONFIG.Visuals.CircleColor
+    aimCircle.BackgroundTransparency = CONFIG.Visuals.CircleTransparency
+    aimCircle.BorderSizePixel = 0
+    aimCircle.Parent = screenGui
+    local acCorner = Instance.new("UICorner")
+    acCorner.CornerRadius = UDim.new(1, 0)
+    acCorner.Parent = aimCircle
+    makeDraggable(aimCircle)
+
+    -- Внешнее кольцо
+    local outerRing = Instance.new("Frame")
+    outerRing.Size = UDim2.new(1.5, 0, 1.5, 0)
+    outerRing.Position = UDim2.new(-0.25, 0, -0.25, 0)
+    outerRing.BackgroundColor3 = CONFIG.Visuals.CircleColor
+    outerRing.BackgroundTransparency = 0.85
+    outerRing.BorderSizePixel = 2
+    outerRing.BorderColor3 = CONFIG.Visuals.CircleColor
+    outerRing.Parent = aimCircle
+    local orCorner = Instance.new("UICorner")
+    orCorner.CornerRadius = UDim.new(1, 0)
+    orCorner.Parent = outerRing
+
+    -- Точка
+    local dot = Instance.new("Frame")
+    dot.Size = UDim2.new(0, CONFIG.Visuals.DotSize, 0, CONFIG.Visuals.DotSize)
+    dot.Position = UDim2.new(0.5, -CONFIG.Visuals.DotSize/2, 0.5, -CONFIG.Visuals.DotSize/2)
+    dot.BackgroundColor3 = CONFIG.Visuals.DotColor
+    dot.BackgroundTransparency = 0
+    dot.BorderSizePixel = 0
+    dot.Parent = aimCircle
+    local dtCorner = Instance
