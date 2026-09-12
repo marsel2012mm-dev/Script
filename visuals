@@ -1,7 +1,7 @@
 -- ============================================
--- 🎨 MY VISUAL HUB v24.0 (FIXED VISUALS)
+-- 🎨 MY VISUAL HUB v25.0 (AURA VIEWER)
 -- 👨‍💻 Author: Timur Bodyak
--- 💥 Fixed: Aura, Wings, Halo, Pet, Fire, Ice
+-- 💥 Только Aura Viewer от Mops + основной хаб
 -- ============================================
 
 pcall(function() task.wait(1) end)
@@ -17,7 +17,7 @@ if not playerGui then return end
 
 -- ==================== GUI ====================
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "VisualHubV24"
+screenGui.Name = "VisualHubV25"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = playerGui
@@ -154,7 +154,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -70, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "🎨 Visual Hub v24.0"
+title.Text = "🎨 Visual Hub v25.0"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 13
@@ -236,7 +236,7 @@ visualScroll.BackgroundTransparency = 1
 visualScroll.BorderSizePixel = 0
 visualScroll.ScrollBarThickness = 3
 visualScroll.ScrollBarImageColor3 = Color3.fromRGB(0, 200, 100)
-visualScroll.CanvasSize = UDim2.new(0, 0, 0, 500)
+visualScroll.CanvasSize = UDim2.new(0, 0, 0, 200)
 visualScroll.Visible = false
 visualScroll.Parent = mainFrame
 
@@ -258,7 +258,7 @@ local function createButton(parent, name, text, yPos)
     return btn
 end
 
--- ==================== BUTTONS ====================
+-- ==================== MAIN BUTTONS ====================
 local rainbowCrosshair = createButton(mainScroll, "RainbowCrosshair", "🎯 Crosshair (Hold)", 5)
 local rainbowHighlight = createButton(mainScroll, "RainbowHighlight", "🌈 Highlight (Hold)", 38)
 local infoPanel = createButton(mainScroll, "InfoPanel", "📊 Info Panel (Hold)", 71)
@@ -268,16 +268,11 @@ local jumpBtn = createButton(mainScroll, "JumpBtn", "🦘 Jump (Hold)", 170)
 local flyBtn = createButton(mainScroll, "FlyBtn", "🕊️ Fly (Hold)", 203)
 local spinBtn = createButton(mainScroll, "SpinBtn", "🔄 Spin (Hold)", 236)
 local fixCamBtn = createButton(mainScroll, "FixCamBtn", "📷 Fix Cam", 269)
-local gradientBtn = createButton(mainScroll, "GradientBtn", "🎨 Gradient / ESP Color", 302)
 
+-- ==================== VISUAL BUTTONS ====================
 local chineseHat = createButton(visualScroll, "ChineseHat", "🇨🇳 Chinese Hat (Hold)", 5)
 local trailBtn = createButton(visualScroll, "TrailBtn", "✨ Trails (Hold)", 38)
-local auraBtn = createButton(visualScroll, "AuraBtn", "🔮 Aura (Hold)", 71)
-local wingsBtn = createButton(visualScroll, "WingsBtn", "🦋 Wings (Hold)", 104)
-local haloBtn = createButton(visualScroll, "HaloBtn", "😇 Halo (Hold)", 137)
-local petBtn = createButton(visualScroll, "PetBtn", "🐾 Pet (Hold)", 170)
-local fireBtn = createButton(visualScroll, "FireBtn", "🔥 Fire Aura (Hold)", 203)
-local iceBtn = createButton(visualScroll, "IceBtn", "❄️ Ice Aura (Hold)", 236)
+local auraBtn = createButton(visualScroll, "AuraBtn", "🔮 Aura Viewer (Hold)", 71)
 
 -- ==================== VARS ====================
 local crosshairActive = false
@@ -294,12 +289,27 @@ local minimized = false
 local espColorFixed = false
 local hatActive = false
 local trailActive = false
-local auraActive = false
-local wingsActive = false
-local haloActive = false
-local petActive = false
-local fireActive = false
-local iceActive = false
+
+-- Aura system from Mops
+local aura_ids = {
+    angel = "97658130917593",
+    starlight = "134645216613107",
+    heavenly = "139300897520961",
+    ribbon = "132069507632161",
+    sakura = "81755778619404",
+    wind = "80694081850877",
+    flow = "119913533725648",
+    star = "73754563740680"
+}
+local aura_order = {"angel", "starlight", "heavenly", "ribbon", "sakura", "wind", "flow", "star"}
+local aura_cache = {}
+local aura_particles = {}
+local aura_color = Color3.fromRGB(133, 220, 255)
+local aura_active = false
+local selected_auras = {}
+for _, name in ipairs(aura_order) do
+    selected_auras[name] = false
+end
 
 local espSettings = {
     Box2D = true, Box3D = false, Skeleton = false, Text = true,
@@ -644,7 +654,7 @@ local function clearAllESP()
     espObjects = {}
 end
 
--- ==================== CHINESE HAT (SMOOTH CONE) ====================
+-- ==================== CHINESE HAT ====================
 local hatPart = nil
 local hatConnection = nil
 
@@ -769,294 +779,90 @@ local function createTrails()
     trailObjects[char] = {trail = trail, att0 = att0, att1 = att1}
 end
 
--- ==================== AURA (PARTICLES) ====================
-local auraAttachment = nil
-local auraParticles = nil
+-- ==================== AURA VIEWER (FROM MOPS) ====================
+local function clearAura()
+    for _, particle in ipairs(aura_particles) do
+        pcall(function() particle:Destroy() end)
+    end
+    aura_particles = {}
+end
+
+local function loadAura(name)
+    if aura_cache[name] then return aura_cache[name] end
+    local id = aura_ids[name]
+    if not id then return nil end
+    local success, result = pcall(game.GetObjects, game, "rbxassetid://"..id)
+    if success and result and result[1] then
+        aura_cache[name] = result[1]
+        return result[1]
+    end
+    return nil
+end
+
+local function colorAura(model, color)
+    local seq = ColorSequence.new(color)
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("PointLight") then
+            descendant.Color = color
+        elseif descendant:IsA("ParticleEmitter") or descendant:IsA("Beam") or descendant:IsA("Trail") then
+            descendant.Color = seq
+        end
+    end
+end
+
+function applyAura()
+    clearAura()
+    
+    local char = LocalPlayer.Character
+    if not char then return end
+    
+    local real_char = char
+    if char.Parent ~= workspace then
+        real_char = nil
+        for _, obj in ipairs(workspace:GetChildren()) do
+            if obj:IsA("Model") and obj.Name == LocalPlayer.Name then
+                if not (obj:GetAttribute("1") or obj == _G.VIEWPORT_CLONE) then
+                    local hrp = obj:FindFirstChild("HumanoidRootPart")
+                    if hrp and hrp:IsA("BasePart") then
+                        real_char = obj
+                        break
+                    end
+                end
+            end
+        end
+    end
+    
+    if not real_char then return end
+    
+    for _, name in ipairs(aura_order) do
+        if selected_auras[name] then
+            local aura_model = loadAura(name)
+            if aura_model then
+                colorAura(aura_model, aura_color)
+                local cloned = aura_model:Clone()
+                for _, part in ipairs(cloned:GetChildren()) do
+                    local target = real_char:FindFirstChild(part.Name)
+                    if target and target:IsA("BasePart") then
+                        for _, child in ipairs(part:GetChildren()) do
+                            child.Parent = target
+                            table.insert(aura_particles, child)
+                        end
+                    end
+                end
+                cloned:Destroy()
+            end
+        end
+    end
+end
 
 local function removeAura()
-    if auraParticles then auraParticles:Destroy() auraParticles = nil end
-    if auraAttachment then auraAttachment:Destroy() auraAttachment = nil end
+    aura_active = false
+    clearAura()
 end
 
 local function createAura()
-    removeAura()
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    auraAttachment = Instance.new("Attachment")
-    auraAttachment.Position = Vector3.new(0, 0, 0)
-    auraAttachment.Parent = hrp
-    
-    auraParticles = Instance.new("ParticleEmitter")
-    auraParticles.Texture = "rbxassetid://243660364"
-    auraParticles.LightEmission = 1
-    auraParticles.LightInfluence = 0
-    auraParticles.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.5),
-        NumberSequenceKeypoint.new(0.5, 1),
-        NumberSequenceKeypoint.new(1, 0)
-    })
-    auraParticles.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.5),
-        NumberSequenceKeypoint.new(1, 1)
-    })
-    auraParticles.Lifetime = NumberRange.new(1, 2)
-    auraParticles.Rate = 50
-    auraParticles.Speed = NumberRange.new(1, 3)
-    auraParticles.SpreadAngle = Vector2.new(180, 180)
-    auraParticles.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 255))
-    }
-    auraParticles.Parent = auraAttachment
-end
-
--- ==================== WINGS (REAL MESH WINGS) ====================
-local wingsModel = nil
-local wingsConnection = nil
-
-local function removeWings()
-    if wingsConnection then wingsConnection:Disconnect() wingsConnection = nil end
-    if wingsModel then wingsModel:Destroy() wingsModel = nil end
-end
-
-local function createWings()
-    removeWings()
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    wingsModel = Instance.new("Model")
-    wingsModel.Name = "WingsModel"
-    wingsModel.Parent = char
-    
-    for side = -1, 1, 2 do
-        for i = 1, 6 do
-            local feather = Instance.new("Part")
-            feather.Size = Vector3.new(0.1, 0.8, 0.3 + i * 0.2)
-            feather.Color = Color3.fromRGB(255, 255, 255)
-            feather.Material = Enum.Material.Neon
-            feather.Transparency = 0.2
-            feather.CanCollide = false
-            feather.Massless = true
-            feather.Anchored = false
-            feather.CastShadow = false
-            feather.Parent = wingsModel
-            
-            local weld = Instance.new("Weld")
-            weld.Part0 = hrp
-            weld.Part1 = feather
-            weld.C0 = CFrame.new(side * (1.5 + i * 0.25), 0.5 + i * 0.3, 1.5 - i * 0.15) * CFrame.Angles(math.rad(side * 20), math.rad(side * (30 + i * 10)), math.rad(side * (i * 5)))
-            weld.C1 = CFrame.new(0, 0, 0)
-            weld.Parent = feather
-        end
-    end
-    
-    wingsConnection = RunService.RenderStepped:Connect(function()
-        if not wingsModel or not wingsModel.Parent then return end
-        local h = (tick() * 0.5) % 1
-        for _, part in ipairs(wingsModel:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.Color = Color3.fromHSV(h, 0.7, 1)
-            end
-        end
-    end)
-end
-
--- ==================== HALO (RING OF PARTS) ====================
-local haloParts = {}
-local haloConnection = nil
-
-local function removeHalo()
-    if haloConnection then haloConnection:Disconnect() haloConnection = nil end
-    for _, part in ipairs(haloParts) do
-        if part then part:Destroy() end
-    end
-    haloParts = {}
-end
-
-local function createHalo()
-    removeHalo()
-    local char = LocalPlayer.Character
-    if not char then return end
-    local head = char:FindFirstChild("Head")
-    if not head then return end
-    
-    for i = 1, 16 do
-        local part = Instance.new("Part")
-        part.Size = Vector3.new(0.3, 0.15, 0.15)
-        part.Color = Color3.fromRGB(255, 255, 0)
-        part.Material = Enum.Material.Neon
-        part.Transparency = 0.1
-        part.CanCollide = false
-        part.Massless = true
-        part.Anchored = false
-        part.CastShadow = false
-        part.Parent = char
-        
-        local angle = (i / 16) * math.pi * 2
-        local weld = Instance.new("Weld")
-        weld.Part0 = head
-        weld.Part1 = part
-        weld.C0 = CFrame.new(math.cos(angle) * 1.2, 2.2, math.sin(angle) * 1.2) * CFrame.Angles(0, -angle, 0)
-        weld.C1 = CFrame.new(0, 0, 0)
-        weld.Parent = part
-        
-        table.insert(haloParts, part)
-    end
-    
-    haloConnection = RunService.RenderStepped:Connect(function()
-        local h = (tick() * 0.3) % 1
-        for _, part in ipairs(haloParts) do
-            if part and part.Parent then
-                part.Color = Color3.fromHSV(h, 1, 1)
-            end
-        end
-    end)
-end
-
--- ==================== PET (ORB WITH TRAIL) ====================
-local petPart = nil
-local petConnection = nil
-local petTrail = nil
-
-local function removePet()
-    if petConnection then petConnection:Disconnect() petConnection = nil end
-    if petTrail then petTrail:Destroy() petTrail = nil end
-    if petPart then petPart:Destroy() petPart = nil end
-end
-
-local function createPet()
-    removePet()
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    petPart = Instance.new("Part")
-    petPart.Shape = Enum.PartType.Ball
-    petPart.Size = Vector3.new(0.8, 0.8, 0.8)
-    petPart.Color = Color3.fromRGB(255, 150, 255)
-    petPart.Material = Enum.Material.Neon
-    petPart.CanCollide = false
-    petPart.Massless = true
-    petPart.Anchored = false
-    petPart.CastShadow = false
-    petPart.Parent = char
-    
-    local att0 = Instance.new("Attachment")
-    att0.Parent = petPart
-    
-    petTrail = Instance.new("Trail")
-    petTrail.Attachment0 = att0
-    petTrail.Lifetime = 1
-    petTrail.MinLength = 0.1
-    petTrail.Color = ColorSequence.new(Color3.fromRGB(255, 0, 255), Color3.fromRGB(0, 255, 255))
-    petTrail.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.3),
-        NumberSequenceKeypoint.new(1, 1)
-    })
-    petTrail.LightEmission = 1
-    petTrail.Parent = petPart
-    
-    local angle = 0
-    petConnection = RunService.RenderStepped:Connect(function(dt)
-        if not petPart or not petPart.Parent or not hrp.Parent then return end
-        angle = angle + dt * 2
-        petPart.CFrame = hrp.CFrame * CFrame.new(math.cos(angle) * 3, math.sin(angle * 2) * 1 + 1, math.sin(angle) * 3)
-        local h = (tick() * 0.5) % 1
-        petPart.Color = Color3.fromHSV(h, 1, 1)
-    end)
-end
-
--- ==================== FIRE AURA (PARTICLES) ====================
-local fireAttachment = nil
-local fireParticles = nil
-
-local function removeFire()
-    if fireParticles then fireParticles:Destroy() fireParticles = nil end
-    if fireAttachment then fireAttachment:Destroy() fireAttachment = nil end
-end
-
-local function createFire()
-    removeFire()
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    fireAttachment = Instance.new("Attachment")
-    fireAttachment.Position = Vector3.new(0, 0, 0)
-    fireAttachment.Parent = hrp
-    
-    fireParticles = Instance.new("ParticleEmitter")
-    fireParticles.Texture = "rbxassetid://243660364"
-    fireParticles.LightEmission = 1
-    fireParticles.LightInfluence = 0
-    fireParticles.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 1.5),
-        NumberSequenceKeypoint.new(1, 0)
-    })
-    fireParticles.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.2),
-        NumberSequenceKeypoint.new(1, 1)
-    })
-    fireParticles.Lifetime = NumberRange.new(0.8, 1.5)
-    fireParticles.Rate = 80
-    fireParticles.Speed = NumberRange.new(3, 6)
-    fireParticles.SpreadAngle = Vector2.new(180, 180)
-    fireParticles.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 0)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 200, 0)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 0))
-    }
-    fireParticles.Parent = fireAttachment
-end
-
--- ==================== ICE AURA (PARTICLES) ====================
-local iceAttachment = nil
-local iceParticles = nil
-
-local function removeIce()
-    if iceParticles then iceParticles:Destroy() iceParticles = nil end
-    if iceAttachment then iceAttachment:Destroy() iceAttachment = nil end
-end
-
-local function createIce()
-    removeIce()
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    iceAttachment = Instance.new("Attachment")
-    iceAttachment.Position = Vector3.new(0, 0, 0)
-    iceAttachment.Parent = hrp
-    
-    iceParticles = Instance.new("ParticleEmitter")
-    iceParticles.Texture = "rbxassetid://243660364"
-    iceParticles.LightEmission = 1
-    iceParticles.LightInfluence = 0
-    iceParticles.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 1),
-        NumberSequenceKeypoint.new(1, 0)
-    })
-    iceParticles.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.3),
-        NumberSequenceKeypoint.new(1, 1)
-    })
-    iceParticles.Lifetime = NumberRange.new(1, 2)
-    iceParticles.Rate = 40
-    iceParticles.Speed = NumberRange.new(1, 3)
-    iceParticles.SpreadAngle = Vector2.new(180, 180)
-    iceParticles.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 200, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
-    }
-    iceParticles.Parent = iceAttachment
+    aura_active = true
+    applyAura()
 end
 
 -- ==================== SUBMENUS ====================
@@ -1306,25 +1112,215 @@ createSubmenu("✨ Trails", 200, 130)
 submenus["✨ Trails"].addSlider("Length", 35, 0.1, 5, 1, function(v) end)
 submenus["✨ Trails"].addToggle("Rainbow", 80, false, function(v) espColorFixed = not v end)
 
-createSubmenu("🔮 Aura", 200, 80)
-submenus["🔮 Aura"].addToggle("Rainbow Mode", 35, true, function(v) end)
+-- ==================== AURA VIEWER SUBMENU ====================
+createSubmenu("🔮 Aura Viewer", 220, 420)
 
-createSubmenu("🦋 Wings", 200, 80)
-submenus["🦋 Wings"].addToggle("Rainbow Wings", 35, true, function(v) end)
+local auraStatus = Instance.new("TextLabel")
+auraStatus.Size = UDim2.new(0, 190, 0, 20)
+auraStatus.Position = UDim2.new(0, 15, 0, 35)
+auraStatus.BackgroundTransparency = 1
+auraStatus.Text = "Selected: 0/8"
+auraStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+auraStatus.Font = Enum.Font.Gotham
+auraStatus.TextSize = 11
+auraStatus.TextXAlignment = Enum.TextXAlignment.Left
+auraStatus.Parent = submenus["🔮 Aura Viewer"].frame
 
-createSubmenu("😇 Halo", 200, 80)
-submenus["😇 Halo"].addToggle("Rainbow Halo", 35, true, function(v) end)
+local auraAllBtn = Instance.new("TextButton")
+auraAllBtn.Size = UDim2.new(0, 190, 0, 24)
+auraAllBtn.Position = UDim2.new(0, 15, 0, 60)
+auraAllBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+auraAllBtn.Text = "ALL"
+auraAllBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+auraAllBtn.Font = Enum.Font.GothamBold
+auraAllBtn.TextSize = 11
+auraAllBtn.AutoButtonColor = false
+auraAllBtn.Parent = submenus["🔮 Aura Viewer"].frame
+local aac = Instance.new("UICorner") aac.CornerRadius = UDim.new(0, 6) aac.Parent = auraAllBtn
 
-createSubmenu("🐾 Pet", 200, 80)
-submenus["🐾 Pet"].addToggle("Rainbow Pet", 35, true, function(v) end)
+local auraScroll = Instance.new("ScrollingFrame")
+auraScroll.Size = UDim2.new(0, 190, 0, 180)
+auraScroll.Position = UDim2.new(0, 15, 0, 90)
+auraScroll.BackgroundTransparency = 1
+auraScroll.BorderSizePixel = 0
+auraScroll.ScrollBarThickness = 3
+auraScroll.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+auraScroll.CanvasSize = UDim2.new(0, 0, 0, #aura_order * 30 + 10)
+auraScroll.Parent = submenus["🔮 Aura Viewer"].frame
 
-createSubmenu("🔥 Fire Aura", 200, 80)
-submenus["🔥 Fire Aura"].addToggle("Enabled", 35, true, function(v) end)
+local auraButtons = {}
 
-createSubmenu("❄️ Ice Aura", 200, 80)
-submenus["❄️ Ice Aura"].addToggle("Enabled", 35, true, function(v) end)
+local function createAuraButton(aura_name, index)
+    local yPos = index * 30
+    
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 26)
+    row.Position = UDim2.new(0, 0, 0, yPos)
+    row.BackgroundTransparency = 1
+    row.Parent = auraScroll
+    
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -30, 1, 0)
+    btn.Position = UDim2.new(0, 0, 0, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    btn.Text = aura_name:upper()
+    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 11
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.AutoButtonColor = false
+    btn.Parent = row
+    local bc = Instance.new("UICorner") bc.CornerRadius = UDim.new(0, 5) bc.Parent = btn
+    
+    local checkbox = Instance.new("TextButton")
+    checkbox.Size = UDim2.new(0, 22, 0, 22)
+    checkbox.Position = UDim2.new(1, -26, 0.5, -11)
+    checkbox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    checkbox.Text = ""
+    checkbox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    checkbox.Font = Enum.Font.GothamBold
+    checkbox.TextSize = 12
+    checkbox.AutoButtonColor = false
+    checkbox.Parent = row
+    local cc = Instance.new("UICorner") cc.CornerRadius = UDim.new(0, 4) cc.Parent = checkbox
+    
+    local function updateCheckbox()
+        if selected_auras[aura_name] then
+            checkbox.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+            checkbox.Text = "✓"
+            btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        else
+            checkbox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            checkbox.Text = ""
+            btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+            btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        end
+        
+        local count = 0
+        for _, v in pairs(selected_auras) do
+            if v then count = count + 1 end
+        end
+        auraStatus.Text = "Selected: " .. count .. "/8"
+        
+        if aura_active then applyAura() end
+    end
+    
+    btn.MouseButton1Click:Connect(function()
+        selected_auras[aura_name] = not selected_auras[aura_name]
+        updateCheckbox()
+    end)
+    
+    checkbox.MouseButton1Click:Connect(function()
+        selected_auras[aura_name] = not selected_auras[aura_name]
+        updateCheckbox()
+    end)
+    
+    auraButtons[aura_name] = {update = updateCheckbox}
+    updateCheckbox()
+end
 
--- Theme window
+for i, name in ipairs(aura_order) do
+    createAuraButton(name, i - 1)
+end
+
+local allOn = false
+auraAllBtn.MouseButton1Click:Connect(function()
+    allOn = not allOn
+    for _, name in ipairs(aura_order) do
+        selected_auras[name] = allOn
+    end
+    for _, data in pairs(auraButtons) do
+        data.update()
+    end
+    auraAllBtn.Text = allOn and "NONE" or "ALL"
+end)
+
+-- Color sliders
+local colorValues = {R = 133, G = 220, B = 255}
+
+local function createColorSlider(name, yPos, colorName, defaultValue)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 190, 0, 20)
+    frame.Position = UDim2.new(0, 15, 0, yPos)
+    frame.BackgroundTransparency = 1
+    frame.Parent = submenus["🔮 Aura Viewer"].frame
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0, 14, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = colorName
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 10
+    label.Font = Enum.Font.GothamBold
+    label.Parent = frame
+    
+    local sliderBg = Instance.new("Frame")
+    sliderBg.Size = UDim2.new(1, -50, 0, 10)
+    sliderBg.Position = UDim2.new(0, 16, 0.5, -5)
+    sliderBg.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    sliderBg.BorderSizePixel = 0
+    sliderBg.Parent = frame
+    local sbc = Instance.new("UICorner") sbc.CornerRadius = UDim.new(1, 0) sbc.Parent = sliderBg
+    
+    local fill = Instance.new("Frame")
+    fill.Size = UDim2.new(defaultValue/255, 0, 1, 0)
+    fill.BackgroundColor3 = colorName == "R" and Color3.fromRGB(255, 80, 80) or 
+                           colorName == "G" and Color3.fromRGB(80, 255, 80) or 
+                           Color3.fromRGB(80, 80, 255)
+    fill.BorderSizePixel = 0
+    fill.Parent = sliderBg
+    local fc = Instance.new("UICorner") fc.CornerRadius = UDim.new(1, 0) fc.Parent = fill
+    
+    local valueLabel = Instance.new("TextLabel")
+    valueLabel.Size = UDim2.new(0, 28, 1, 0)
+    valueLabel.Position = UDim2.new(1, -30, 0, 0)
+    valueLabel.BackgroundTransparency = 1
+    valueLabel.Text = tostring(defaultValue)
+    valueLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    valueLabel.TextSize = 10
+    valueLabel.Font = Enum.Font.Gotham
+    valueLabel.Parent = frame
+    
+    local currentValue = defaultValue
+    local dragging = false
+    
+    local function updateSlider(mouseX)
+        local absX = sliderBg.AbsolutePosition.X
+        local absSize = sliderBg.AbsoluteSize.X
+        if absSize <= 0 then return end
+        local x = math.clamp((mouseX - absX) / absSize, 0, 1)
+        currentValue = math.round(x * 255)
+        fill.Size = UDim2.new(x, 0, 1, 0)
+        valueLabel.Text = tostring(currentValue)
+        colorValues[colorName] = currentValue
+        aura_color = Color3.fromRGB(colorValues.R, colorValues.G, colorValues.B)
+        if aura_active then applyAura() end
+    end
+    
+    sliderBg.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            updateSlider(input.Position.X)
+        end
+    end)
+    sliderBg.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            updateSlider(input.Position.X)
+        end
+    end)
+end
+
+createColorSlider("R", 285, "R", 133)
+createColorSlider("G", 310, "G", 220)
+createColorSlider("B", 335, "B", 255)
+
+-- ==================== THEME WINDOW ====================
 local themeFrame = Instance.new("Frame")
 themeFrame.Size = UDim2.new(0, 200, 0, 280)
 themeFrame.Position = UDim2.new(0.5, -100, 0.5, -140)
@@ -1363,7 +1359,7 @@ for i, t in ipairs(themes) do
     themeButtons[i] = btn
 end
 
--- Info panel
+-- ==================== INFO PANEL ====================
 local infoFrame = Instance.new("Frame")
 infoFrame.Size = UDim2.new(0, 120, 0, 40)
 infoFrame.Position = UDim2.new(0.5, -60, 0, 10)
@@ -1446,40 +1442,14 @@ setupHoldButton(trailBtn, function() submenus["✨ Trails"].frame.Visible = true
     if trailActive then createTrails() else removeTrails() end
 end)
 
-setupHoldButton(auraBtn, function() submenus["🔮 Aura"].frame.Visible = true end, function()
-    auraActive = not auraActive
-    auraBtn.BackgroundColor3 = auraActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if auraActive then createAura() else removeAura() end
-end)
-
-setupHoldButton(wingsBtn, function() submenus["🦋 Wings"].frame.Visible = true end, function()
-    wingsActive = not wingsActive
-    wingsBtn.BackgroundColor3 = wingsActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if wingsActive then createWings() else removeWings() end
-end)
-
-setupHoldButton(haloBtn, function() submenus["😇 Halo"].frame.Visible = true end, function()
-    haloActive = not haloActive
-    haloBtn.BackgroundColor3 = haloActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if haloActive then createHalo() else removeHalo() end
-end)
-
-setupHoldButton(petBtn, function() submenus["🐾 Pet"].frame.Visible = true end, function()
-    petActive = not petActive
-    petBtn.BackgroundColor3 = petActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if petActive then createPet() else removePet() end
-end)
-
-setupHoldButton(fireBtn, function() submenus["🔥 Fire Aura"].frame.Visible = true end, function()
-    fireActive = not fireActive
-    fireBtn.BackgroundColor3 = fireActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if fireActive then createFire() else removeFire() end
-end)
-
-setupHoldButton(iceBtn, function() submenus["❄️ Ice Aura"].frame.Visible = true end, function()
-    iceActive = not iceActive
-    iceBtn.BackgroundColor3 = iceActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if iceActive then createIce() else removeIce() end
+setupHoldButton(auraBtn, function() 
+    submenus["🔮 Aura Viewer"].frame.Visible = true
+    aura_active = true
+    applyAura()
+end, function()
+    aura_active = not aura_active
+    auraBtn.BackgroundColor3 = aura_active and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
+    if aura_active then createAura() else removeAura() end
 end)
 
 -- ==================== EXTRA ====================
@@ -1487,10 +1457,6 @@ fixCamBtn.MouseButton1Click:Connect(function()
     if fixCamActive then fixCamActive = false savedCamCFrame = nil
     else fixCamActive = true savedCamCFrame = workspace.CurrentCamera.CFrame end
     fixCamBtn.BackgroundColor3 = fixCamActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-end)
-
-gradientBtn.MouseButton1Click:Connect(function()
-    if gradientFrame then gradientFrame.Visible = not gradientFrame.Visible end
 end)
 
 mainTabBtn.MouseButton1Click:Connect(function()
@@ -1743,16 +1709,11 @@ LocalPlayer.CharacterAdded:Connect(function(char)
     if spinActive then stopSpin() task.wait(0.5) startSpin() end
     if hatActive then removeChineseHat() task.wait(0.5) createChineseHat() end
     if trailActive then removeTrails() task.wait(0.5) createTrails() end
-    if auraActive then removeAura() task.wait(0.5) createAura() end
-    if wingsActive then removeWings() task.wait(0.5) createWings() end
-    if haloActive then removeHalo() task.wait(0.5) createHalo() end
-    if petActive then removePet() task.wait(0.5) createPet() end
-    if fireActive then removeFire() task.wait(0.5) createFire() end
-    if iceActive then removeIce() task.wait(0.5) createIce() end
+    if aura_active then applyAura() end
     if fixCamActive then savedCamCFrame = workspace.CurrentCamera.CFrame end
 end)
 
-showNotification("🎨 Visual Hub v24.0", "Хаб загружен!\n✨ Визуалы: ПОЧИНЕНЫ!", Color3.fromRGB(0, 200, 255), 5)
+showNotification("🎨 Visual Hub v25.0", "Хаб загружен!\n🔮 Aura Viewer: 8 аур", Color3.fromRGB(0, 200, 255), 5)
 
-print("✅ Visual Hub v24.0 loaded!")
-print("✨ Aura, Wings, Halo, Pet, Fire, Ice: FIXED")
+print("✅ Visual Hub v25.0 loaded!")
+print("🔮 Aura Viewer: 8 auras from catalog")
