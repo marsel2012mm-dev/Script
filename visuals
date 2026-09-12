@@ -1,7 +1,7 @@
 -- ============================================
--- 🎨 MY VISUAL HUB v23.0 (BIG UPDATE)
+-- 🎨 MY VISUAL HUB v24.0 (FIXED VISUALS)
 -- 👨‍💻 Author: Timur Bodyak
--- 💥 Smooth Cone Hat + Tons of New Visuals
+-- 💥 Fixed: Aura, Wings, Halo, Pet, Fire, Ice
 -- ============================================
 
 pcall(function() task.wait(1) end)
@@ -17,7 +17,7 @@ if not playerGui then return end
 
 -- ==================== GUI ====================
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "VisualHubV23"
+screenGui.Name = "VisualHubV24"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = playerGui
@@ -34,30 +34,23 @@ local notifList = {}
 local function showNotification(title, text, color, duration)
     color = color or Color3.fromRGB(0, 200, 100)
     duration = duration or 3.5
-    
     for _, n in ipairs(notifList) do
-        TweenService:Create(n, TweenInfo.new(0.3), {
-            Position = UDim2.new(0, 0, 0, n.Position.Y.Offset + 80)
-        }):Play()
+        TweenService:Create(n, TweenInfo.new(0.3), {Position = UDim2.new(0, 0, 0, n.Position.Y.Offset + 80)}):Play()
     end
-    
     local notif = Instance.new("Frame")
     notif.Size = UDim2.new(1, 0, 0, 75)
     notif.Position = UDim2.new(0, 350, 0, 0)
     notif.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
     notif.BorderSizePixel = 0
     notif.Parent = notifContainer
-    
     local nc = Instance.new("UICorner") nc.CornerRadius = UDim.new(0, 10) nc.Parent = notif
     local ns = Instance.new("UIStroke") ns.Thickness = 2 ns.Color = color ns.Parent = notif
-    
     local accent = Instance.new("Frame")
     accent.Size = UDim2.new(0, 4, 1, 0)
     accent.BackgroundColor3 = color
     accent.BorderSizePixel = 0
     accent.Parent = notif
     local ac = Instance.new("UICorner") ac.CornerRadius = UDim.new(0, 10) ac.Parent = accent
-    
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.new(1, -20, 0, 25)
     titleLabel.Position = UDim2.new(0, 15, 0, 5)
@@ -68,7 +61,6 @@ local function showNotification(title, text, color, duration)
     titleLabel.TextSize = 14
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = notif
-    
     local textLabel = Instance.new("TextLabel")
     textLabel.Size = UDim2.new(1, -20, 0, 40)
     textLabel.Position = UDim2.new(0, 15, 0, 30)
@@ -81,18 +73,10 @@ local function showNotification(title, text, color, duration)
     textLabel.TextYAlignment = Enum.TextYAlignment.Top
     textLabel.TextWrapped = true
     textLabel.Parent = notif
-    
-    TweenService:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0, 0, 0, 0)
-    }):Play()
-    
+    TweenService:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
     table.insert(notifList, 1, notif)
-    
     task.delay(duration, function()
-        TweenService:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-            Position = UDim2.new(1, 0, 0, 0),
-            BackgroundTransparency = 1
-        }):Play()
+        TweenService:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1}):Play()
         task.wait(0.3)
         notif:Destroy()
         for i, n in ipairs(notifList) do
@@ -170,7 +154,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -70, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "🎨 Visual Hub v23.0"
+title.Text = "🎨 Visual Hub v24.0"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 13
@@ -252,7 +236,7 @@ visualScroll.BackgroundTransparency = 1
 visualScroll.BorderSizePixel = 0
 visualScroll.ScrollBarThickness = 3
 visualScroll.ScrollBarImageColor3 = Color3.fromRGB(0, 200, 100)
-visualScroll.CanvasSize = UDim2.new(0, 0, 0, 700)
+visualScroll.CanvasSize = UDim2.new(0, 0, 0, 500)
 visualScroll.Visible = false
 visualScroll.Parent = mainFrame
 
@@ -294,11 +278,6 @@ local haloBtn = createButton(visualScroll, "HaloBtn", "😇 Halo (Hold)", 137)
 local petBtn = createButton(visualScroll, "PetBtn", "🐾 Pet (Hold)", 170)
 local fireBtn = createButton(visualScroll, "FireBtn", "🔥 Fire Aura (Hold)", 203)
 local iceBtn = createButton(visualScroll, "IceBtn", "❄️ Ice Aura (Hold)", 236)
-local lightningBtn = createButton(visualScroll, "LightningBtn", "⚡ Lightning (Hold)", 269)
-local bubblesBtn = createButton(visualScroll, "BubblesBtn", "🫧 Bubbles (Hold)", 302)
-local rainbowBtn = createButton(visualScroll, "RainbowBtn", "🌈 Rainbow Aura (Hold)", 335)
-local starBtn = createButton(visualScroll, "StarBtn", "⭐ Star Aura (Hold)", 368)
-local heartBtn = createButton(visualScroll, "HeartBtn", "💖 Heart Aura (Hold)", 401)
 
 -- ==================== VARS ====================
 local crosshairActive = false
@@ -321,11 +300,6 @@ local haloActive = false
 local petActive = false
 local fireActive = false
 local iceActive = false
-local lightningActive = false
-local bubblesActive = false
-local rainbowAuraActive = false
-local starActive = false
-local heartActive = false
 
 local espSettings = {
     Box2D = true, Box3D = false, Skeleton = false, Text = true,
@@ -695,7 +669,6 @@ end
 
 local function createChineseHat()
     removeChineseHat()
-    
     local char = LocalPlayer.Character
     if not char then return end
     local head = char:FindFirstChild("Head")
@@ -748,9 +721,7 @@ local function createChineseHat()
 end
 
 local function updateChineseHat()
-    if hatPart then
-        createChineseHat()
-    end
+    if hatPart then createChineseHat() end
 end
 
 -- ==================== TRAILS ====================
@@ -767,24 +738,20 @@ end
 
 local function createTrails()
     removeTrails()
-    
     local char = LocalPlayer.Character
     if not char then return end
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     
     local att0 = Instance.new("Attachment")
-    att0.Name = "TrailAtt0"
     att0.Position = Vector3.new(0, 2, 0)
     att0.Parent = hrp
     
     local att1 = Instance.new("Attachment")
-    att1.Name = "TrailAtt1"
     att1.Position = Vector3.new(0, -2, 0)
     att1.Parent = hrp
     
     local trail = Instance.new("Trail")
-    trail.Name = "MyTrail"
     trail.Attachment0 = att0
     trail.Attachment1 = att1
     trail.Lifetime = 1
@@ -802,547 +769,294 @@ local function createTrails()
     trailObjects[char] = {trail = trail, att0 = att0, att1 = att1}
 end
 
--- ==================== NEW VISUALS ====================
--- Aura
-local auraPart = nil
-local auraConnection = nil
+-- ==================== AURA (PARTICLES) ====================
+local auraAttachment = nil
+local auraParticles = nil
 
 local function removeAura()
-    if auraConnection then auraConnection:Disconnect() auraConnection = nil end
-    if auraPart then auraPart:Destroy() auraPart = nil end
+    if auraParticles then auraParticles:Destroy() auraParticles = nil end
+    if auraAttachment then auraAttachment:Destroy() auraAttachment = nil end
 end
 
 local function createAura()
     removeAura()
-    
     local char = LocalPlayer.Character
     if not char then return end
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     
-    local aura = Instance.new("Part")
-    aura.Name = "Aura"
-    aura.Shape = Enum.PartType.Ball
-    aura.Size = Vector3.new(6, 6, 6)
-    aura.Color = Color3.fromRGB(255, 0, 255)
-    aura.Material = Enum.Material.Neon
-    aura.Transparency = 0.7
-    aura.CanCollide = false
-    aura.Massless = true
-    aura.Anchored = false
-    aura.CastShadow = false
-    aura.Parent = char
+    auraAttachment = Instance.new("Attachment")
+    auraAttachment.Position = Vector3.new(0, 0, 0)
+    auraAttachment.Parent = hrp
     
-    local weld = Instance.new("Weld")
-    weld.Part0 = hrp
-    weld.Part1 = aura
-    weld.C0 = CFrame.new(0, 0, 0)
-    weld.C1 = CFrame.new(0, 0, 0)
-    weld.Parent = aura
-    
-    auraPart = aura
-    
-    auraConnection = RunService.RenderStepped:Connect(function()
-        if auraPart and auraPart.Parent then
-            local h = (tick() * 0.3) % 1
-            auraPart.Color = Color3.fromHSV(h, 1, 1)
-            auraPart.Size = Vector3.new(5 + math.sin(tick() * 2) * 1, 5 + math.sin(tick() * 2) * 1, 5 + math.sin(tick() * 2) * 1)
-        end
-    end)
+    auraParticles = Instance.new("ParticleEmitter")
+    auraParticles.Texture = "rbxassetid://243660364"
+    auraParticles.LightEmission = 1
+    auraParticles.LightInfluence = 0
+    auraParticles.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.5),
+        NumberSequenceKeypoint.new(0.5, 1),
+        NumberSequenceKeypoint.new(1, 0)
+    })
+    auraParticles.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.5),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    auraParticles.Lifetime = NumberRange.new(1, 2)
+    auraParticles.Rate = 50
+    auraParticles.Speed = NumberRange.new(1, 3)
+    auraParticles.SpreadAngle = Vector2.new(180, 180)
+    auraParticles.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 255))
+    }
+    auraParticles.Parent = auraAttachment
 end
 
--- Wings
-local wingsParts = {}
+-- ==================== WINGS (REAL MESH WINGS) ====================
+local wingsModel = nil
 local wingsConnection = nil
 
 local function removeWings()
     if wingsConnection then wingsConnection:Disconnect() wingsConnection = nil end
-    for _, part in ipairs(wingsParts) do
-        if part then part:Destroy() end
-    end
-    wingsParts = {}
+    if wingsModel then wingsModel:Destroy() wingsModel = nil end
 end
 
 local function createWings()
     removeWings()
-    
     local char = LocalPlayer.Character
     if not char then return end
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     
-    for i = 1, 4 do
-        local wing = Instance.new("Part")
-        wing.Name = "Wing" .. i
-        wing.Size = Vector3.new(0.2, 2, 3)
-        wing.Color = Color3.fromRGB(255, 255, 255)
-        wing.Material = Enum.Material.Neon
-        wing.Transparency = 0.3
-        wing.CanCollide = false
-        wing.Massless = true
-        wing.Anchored = false
-        wing.CastShadow = false
-        wing.Parent = char
-        
-        local side = (i <= 2) and -1 or 1
-        local offsetY = (i % 2 == 1) and 1 or -1
-        
-        local weld = Instance.new("Weld")
-        weld.Part0 = hrp
-        weld.Part1 = wing
-        weld.C0 = CFrame.new(side * 1.5, offsetY, 1) * CFrame.Angles(0, math.rad(side * 30), 0)
-        weld.C1 = CFrame.new(0, 0, 0)
-        weld.Parent = wing
-        
-        table.insert(wingsParts, wing)
+    wingsModel = Instance.new("Model")
+    wingsModel.Name = "WingsModel"
+    wingsModel.Parent = char
+    
+    for side = -1, 1, 2 do
+        for i = 1, 6 do
+            local feather = Instance.new("Part")
+            feather.Size = Vector3.new(0.1, 0.8, 0.3 + i * 0.2)
+            feather.Color = Color3.fromRGB(255, 255, 255)
+            feather.Material = Enum.Material.Neon
+            feather.Transparency = 0.2
+            feather.CanCollide = false
+            feather.Massless = true
+            feather.Anchored = false
+            feather.CastShadow = false
+            feather.Parent = wingsModel
+            
+            local weld = Instance.new("Weld")
+            weld.Part0 = hrp
+            weld.Part1 = feather
+            weld.C0 = CFrame.new(side * (1.5 + i * 0.25), 0.5 + i * 0.3, 1.5 - i * 0.15) * CFrame.Angles(math.rad(side * 20), math.rad(side * (30 + i * 10)), math.rad(side * (i * 5)))
+            weld.C1 = CFrame.new(0, 0, 0)
+            weld.Parent = feather
+        end
     end
     
     wingsConnection = RunService.RenderStepped:Connect(function()
-        for _, part in ipairs(wingsParts) do
+        if not wingsModel or not wingsModel.Parent then return end
+        local h = (tick() * 0.5) % 1
+        for _, part in ipairs(wingsModel:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Color = Color3.fromHSV(h, 0.7, 1)
+            end
+        end
+    end)
+end
+
+-- ==================== HALO (RING OF PARTS) ====================
+local haloParts = {}
+local haloConnection = nil
+
+local function removeHalo()
+    if haloConnection then haloConnection:Disconnect() haloConnection = nil end
+    for _, part in ipairs(haloParts) do
+        if part then part:Destroy() end
+    end
+    haloParts = {}
+end
+
+local function createHalo()
+    removeHalo()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local head = char:FindFirstChild("Head")
+    if not head then return end
+    
+    for i = 1, 16 do
+        local part = Instance.new("Part")
+        part.Size = Vector3.new(0.3, 0.15, 0.15)
+        part.Color = Color3.fromRGB(255, 255, 0)
+        part.Material = Enum.Material.Neon
+        part.Transparency = 0.1
+        part.CanCollide = false
+        part.Massless = true
+        part.Anchored = false
+        part.CastShadow = false
+        part.Parent = char
+        
+        local angle = (i / 16) * math.pi * 2
+        local weld = Instance.new("Weld")
+        weld.Part0 = head
+        weld.Part1 = part
+        weld.C0 = CFrame.new(math.cos(angle) * 1.2, 2.2, math.sin(angle) * 1.2) * CFrame.Angles(0, -angle, 0)
+        weld.C1 = CFrame.new(0, 0, 0)
+        weld.Parent = part
+        
+        table.insert(haloParts, part)
+    end
+    
+    haloConnection = RunService.RenderStepped:Connect(function()
+        local h = (tick() * 0.3) % 1
+        for _, part in ipairs(haloParts) do
             if part and part.Parent then
-                local h = (tick() * 0.3) % 1
                 part.Color = Color3.fromHSV(h, 1, 1)
             end
         end
     end)
 end
 
--- Halo
-local haloPart = nil
-
-local function removeHalo()
-    if haloPart then haloPart:Destroy() haloPart = nil end
-end
-
-local function createHalo()
-    removeHalo()
-    
-    local char = LocalPlayer.Character
-    if not char then return end
-    local head = char:FindFirstChild("Head")
-    if not head then return end
-    
-    local halo = Instance.new("Part")
-    halo.Name = "Halo"
-    halo.Shape = Enum.PartType.Cylinder
-    halo.Size = Vector3.new(0.2, 3, 3)
-    halo.Color = Color3.fromRGB(255, 255, 0)
-    halo.Material = Enum.Material.Neon
-    halo.Transparency = 0.3
-    halo.CanCollide = false
-    halo.Massless = true
-    halo.Anchored = false
-    halo.CastShadow = false
-    halo.Parent = char
-    
-    halo.CFrame = head.CFrame * CFrame.new(0, 2, 0) * CFrame.Angles(0, 0, math.rad(90))
-    
-    local weld = Instance.new("Weld")
-    weld.Part0 = head
-    weld.Part1 = halo
-    weld.C0 = CFrame.new(0, 2, 0) * CFrame.Angles(0, 0, math.rad(90))
-    weld.C1 = CFrame.new(0, 0, 0)
-    weld.Parent = halo
-    
-    haloPart = halo
-end
-
--- Pet
+-- ==================== PET (ORB WITH TRAIL) ====================
 local petPart = nil
 local petConnection = nil
+local petTrail = nil
 
 local function removePet()
     if petConnection then petConnection:Disconnect() petConnection = nil end
+    if petTrail then petTrail:Destroy() petTrail = nil end
     if petPart then petPart:Destroy() petPart = nil end
 end
 
 local function createPet()
     removePet()
-    
     local char = LocalPlayer.Character
     if not char then return end
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     
-    local pet = Instance.new("Part")
-    pet.Name = "Pet"
-    pet.Shape = Enum.PartType.Ball
-    pet.Size = Vector3.new(1, 1, 1)
-    pet.Color = Color3.fromRGB(255, 100, 255)
-    pet.Material = Enum.Material.Neon
-    pet.CanCollide = false
-    pet.Massless = true
-    pet.Anchored = false
-    pet.CastShadow = false
-    pet.Parent = char
+    petPart = Instance.new("Part")
+    petPart.Shape = Enum.PartType.Ball
+    petPart.Size = Vector3.new(0.8, 0.8, 0.8)
+    petPart.Color = Color3.fromRGB(255, 150, 255)
+    petPart.Material = Enum.Material.Neon
+    petPart.CanCollide = false
+    petPart.Massless = true
+    petPart.Anchored = false
+    petPart.CastShadow = false
+    petPart.Parent = char
     
-    petPart = pet
+    local att0 = Instance.new("Attachment")
+    att0.Parent = petPart
     
-    petConnection = RunService.RenderStepped:Connect(function()
-        if petPart and petPart.Parent and hrp then
-            local offset = CFrame.new(math.sin(tick() * 2) * 3, math.sin(tick() * 3) * 1 + 1, math.cos(tick() * 2) * 3)
-            petPart.CFrame = hrp.CFrame * offset
-            local h = (tick() * 0.5) % 1
-            petPart.Color = Color3.fromHSV(h, 1, 1)
-        end
+    petTrail = Instance.new("Trail")
+    petTrail.Attachment0 = att0
+    petTrail.Lifetime = 1
+    petTrail.MinLength = 0.1
+    petTrail.Color = ColorSequence.new(Color3.fromRGB(255, 0, 255), Color3.fromRGB(0, 255, 255))
+    petTrail.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.3),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    petTrail.LightEmission = 1
+    petTrail.Parent = petPart
+    
+    local angle = 0
+    petConnection = RunService.RenderStepped:Connect(function(dt)
+        if not petPart or not petPart.Parent or not hrp.Parent then return end
+        angle = angle + dt * 2
+        petPart.CFrame = hrp.CFrame * CFrame.new(math.cos(angle) * 3, math.sin(angle * 2) * 1 + 1, math.sin(angle) * 3)
+        local h = (tick() * 0.5) % 1
+        petPart.Color = Color3.fromHSV(h, 1, 1)
     end)
 end
 
--- Fire Aura
-local fireConnection = nil
-local fireParts = {}
+-- ==================== FIRE AURA (PARTICLES) ====================
+local fireAttachment = nil
+local fireParticles = nil
 
 local function removeFire()
-    if fireConnection then fireConnection:Disconnect() fireConnection = nil end
-    for _, part in ipairs(fireParts) do
-        if part then part:Destroy() end
-    end
-    fireParts = {}
+    if fireParticles then fireParticles:Destroy() fireParticles = nil end
+    if fireAttachment then fireAttachment:Destroy() fireAttachment = nil end
 end
 
 local function createFire()
     removeFire()
-    
     local char = LocalPlayer.Character
     if not char then return end
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     
-    fireConnection = RunService.Heartbeat:Connect(function()
-        if not char or not char.Parent then return end
-        local part = Instance.new("Part")
-        part.Size = Vector3.new(0.5, 0.5, 0.5)
-        part.Shape = Enum.PartType.Ball
-        part.Color = Color3.fromRGB(255, 100, 0)
-        part.Material = Enum.Material.Neon
-        part.CanCollide = false
-        part.Anchored = true
-        part.CastShadow = false
-        part.Parent = workspace
-        part.CFrame = hrp.CFrame * CFrame.new(math.random(-2, 2), math.random(-2, 2), math.random(-2, 2))
-        
-        table.insert(fireParts, part)
-        TweenService:Create(part, TweenInfo.new(1), {
-            Size = Vector3.new(0, 0, 0),
-            Transparency = 1
-        }):Play()
-        
-        task.delay(1, function()
-            if part then part:Destroy() end
-            for i, p in ipairs(fireParts) do
-                if p == part then table.remove(fireParts, i) break end
-            end
-        end)
-    end)
+    fireAttachment = Instance.new("Attachment")
+    fireAttachment.Position = Vector3.new(0, 0, 0)
+    fireAttachment.Parent = hrp
+    
+    fireParticles = Instance.new("ParticleEmitter")
+    fireParticles.Texture = "rbxassetid://243660364"
+    fireParticles.LightEmission = 1
+    fireParticles.LightInfluence = 0
+    fireParticles.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 1.5),
+        NumberSequenceKeypoint.new(1, 0)
+    })
+    fireParticles.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.2),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    fireParticles.Lifetime = NumberRange.new(0.8, 1.5)
+    fireParticles.Rate = 80
+    fireParticles.Speed = NumberRange.new(3, 6)
+    fireParticles.SpreadAngle = Vector2.new(180, 180)
+    fireParticles.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 0)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 200, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 0))
+    }
+    fireParticles.Parent = fireAttachment
 end
 
--- Ice Aura
-local iceConnection = nil
-local iceParts = {}
+-- ==================== ICE AURA (PARTICLES) ====================
+local iceAttachment = nil
+local iceParticles = nil
 
 local function removeIce()
-    if iceConnection then iceConnection:Disconnect() iceConnection = nil end
-    for _, part in ipairs(iceParts) do
-        if part then part:Destroy() end
-    end
-    iceParts = {}
+    if iceParticles then iceParticles:Destroy() iceParticles = nil end
+    if iceAttachment then iceAttachment:Destroy() iceAttachment = nil end
 end
 
 local function createIce()
     removeIce()
-    
     local char = LocalPlayer.Character
     if not char then return end
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     
-    iceConnection = RunService.Heartbeat:Connect(function()
-        if not char or not char.Parent then return end
-        local part = Instance.new("Part")
-        part.Size = Vector3.new(0.3, 0.3, 0.3)
-        part.Shape = Enum.PartType.Ball
-        part.Color = Color3.fromRGB(150, 200, 255)
-        part.Material = Enum.Material.Ice
-        part.CanCollide = false
-        part.Anchored = true
-        part.CastShadow = false
-        part.Parent = workspace
-        part.CFrame = hrp.CFrame * CFrame.new(math.random(-2, 2), math.random(-2, 2), math.random(-2, 2))
-        
-        table.insert(iceParts, part)
-        TweenService:Create(part, TweenInfo.new(1.5), {
-            Size = Vector3.new(0, 0, 0),
-            Transparency = 1
-        }):Play()
-        
-        task.delay(1.5, function()
-            if part then part:Destroy() end
-            for i, p in ipairs(iceParts) do
-                if p == part then table.remove(iceParts, i) break end
-            end
-        end)
-    end)
-end
-
--- Lightning
-local lightningConnection = nil
-local lightningParts = {}
-
-local function removeLightning()
-    if lightningConnection then lightningConnection:Disconnect() lightningConnection = nil end
-    for _, part in ipairs(lightningParts) do
-        if part then part:Destroy() end
-    end
-    lightningParts = {}
-end
-
-local function createLightning()
-    removeLightning()
+    iceAttachment = Instance.new("Attachment")
+    iceAttachment.Position = Vector3.new(0, 0, 0)
+    iceAttachment.Parent = hrp
     
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    lightningConnection = RunService.Heartbeat:Connect(function()
-        if not char or not char.Parent then return end
-        if math.random() > 0.3 then return end
-        
-        local part = Instance.new("Part")
-        part.Size = Vector3.new(0.2, 0.2, math.random(3, 8))
-        part.Color = Color3.fromRGB(255, 255, 100)
-        part.Material = Enum.Material.Neon
-        part.CanCollide = false
-        part.Anchored = true
-        part.CastShadow = false
-        part.Parent = workspace
-        part.CFrame = hrp.CFrame * CFrame.new(math.random(-3, 3), math.random(-3, 3), math.random(-3, 3)) * CFrame.Angles(math.random() * 6, math.random() * 6, math.random() * 6)
-        
-        table.insert(lightningParts, part)
-        TweenService:Create(part, TweenInfo.new(0.3), {
-            Transparency = 1
-        }):Play()
-        
-        task.delay(0.3, function()
-            if part then part:Destroy() end
-            for i, p in ipairs(lightningParts) do
-                if p == part then table.remove(lightningParts, i) break end
-            end
-        end)
-    end)
-end
-
--- Bubbles
-local bubblesConnection = nil
-local bubblesParts = {}
-
-local function removeBubbles()
-    if bubblesConnection then bubblesConnection:Disconnect() bubblesConnection = nil end
-    for _, part in ipairs(bubblesParts) do
-        if part then part:Destroy() end
-    end
-    bubblesParts = {}
-end
-
-local function createBubbles()
-    removeBubbles()
-    
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    bubblesConnection = RunService.Heartbeat:Connect(function()
-        if not char or not char.Parent then return end
-        if math.random() > 0.5 then return end
-        
-        local part = Instance.new("Part")
-        part.Size = Vector3.new(0.3, 0.3, 0.3)
-        part.Shape = Enum.PartType.Ball
-        part.Color = Color3.fromRGB(200, 255, 255)
-        part.Material = Enum.Material.Glass
-        part.Transparency = 0.3
-        part.CanCollide = false
-        part.Anchored = true
-        part.CastShadow = false
-        part.Parent = workspace
-        part.CFrame = hrp.CFrame * CFrame.new(math.random(-2, 2), math.random(-2, 2), math.random(-2, 2))
-        
-        table.insert(bubblesParts, part)
-        TweenService:Create(part, TweenInfo.new(2), {
-            Position = part.Position + Vector3.new(0, 5, 0),
-            Size = Vector3.new(0, 0, 0),
-            Transparency = 1
-        }):Play()
-        
-        task.delay(2, function()
-            if part then part:Destroy() end
-            for i, p in ipairs(bubblesParts) do
-                if p == part then table.remove(bubblesParts, i) break end
-            end
-        end)
-    end)
-end
-
--- Rainbow Aura
-local rainbowAuraConnection = nil
-local rainbowAuraParts = {}
-
-local function removeRainbowAura()
-    if rainbowAuraConnection then rainbowAuraConnection:Disconnect() rainbowAuraConnection = nil end
-    for _, part in ipairs(rainbowAuraParts) do
-        if part then part:Destroy() end
-    end
-    rainbowAuraParts = {}
-end
-
-local function createRainbowAura()
-    removeRainbowAura()
-    
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    for i = 1, 20 do
-        local part = Instance.new("Part")
-        part.Size = Vector3.new(0.5, 0.5, 0.5)
-        part.Shape = Enum.PartType.Ball
-        part.Color = Color3.fromRGB(255, 0, 0)
-        part.Material = Enum.Material.Neon
-        part.CanCollide = false
-        part.Massless = true
-        part.Anchored = false
-        part.CastShadow = false
-        part.Parent = char
-        
-        local weld = Instance.new("Weld")
-        weld.Part0 = hrp
-        weld.Part1 = part
-        weld.Parent = part
-        
-        table.insert(rainbowAuraParts, {part = part, weld = weld, index = i})
-    end
-    
-    rainbowAuraConnection = RunService.RenderStepped:Connect(function()
-        local t = tick()
-        for _, data in ipairs(rainbowAuraParts) do
-            if data.part and data.part.Parent then
-                local angle = t + data.index * (math.pi * 2 / 20)
-                local radius = 3
-                data.weld.C0 = CFrame.new(math.cos(angle) * radius, math.sin(angle * 2) * 1, math.sin(angle) * radius)
-                local h = (t * 0.5 + data.index * 0.05) % 1
-                data.part.Color = Color3.fromHSV(h, 1, 1)
-            end
-        end
-    end)
-end
-
--- Star Aura
-local starConnection = nil
-local starParts = {}
-
-local function removeStar()
-    if starConnection then starConnection:Disconnect() starConnection = nil end
-    for _, part in ipairs(starParts) do
-        if part then part:Destroy() end
-    end
-    starParts = {}
-end
-
-local function createStar()
-    removeStar()
-    
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    for i = 1, 15 do
-        local part = Instance.new("Part")
-        part.Size = Vector3.new(0.4, 0.4, 0.4)
-        part.Shape = Enum.PartType.Ball
-        part.Color = Color3.fromRGB(255, 255, 0)
-        part.Material = Enum.Material.Neon
-        part.CanCollide = false
-        part.Massless = true
-        part.Anchored = false
-        part.CastShadow = false
-        part.Parent = char
-        
-        local weld = Instance.new("Weld")
-        weld.Part0 = hrp
-        weld.Part1 = part
-        weld.Parent = part
-        
-        table.insert(starParts, {part = part, weld = weld, index = i})
-    end
-    
-    starConnection = RunService.RenderStepped:Connect(function()
-        local t = tick()
-        for _, data in ipairs(starParts) do
-            if data.part and data.part.Parent then
-                local angle = t * 2 + data.index * (math.pi * 2 / 15)
-                local radius = 2.5
-                data.weld.C0 = CFrame.new(math.cos(angle) * radius, math.sin(angle * 3) * 1.5, math.sin(angle) * radius)
-                data.part.Color = Color3.fromRGB(255, 255, 0)
-            end
-        end
-    end)
-end
-
--- Heart Aura
-local heartConnection = nil
-local heartParts = {}
-
-local function removeHeart()
-    if heartConnection then heartConnection:Disconnect() heartConnection = nil end
-    for _, part in ipairs(heartParts) do
-        if part then part:Destroy() end
-    end
-    heartParts = {}
-end
-
-local function createHeart()
-    removeHeart()
-    
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    for i = 1, 15 do
-        local part = Instance.new("Part")
-        part.Size = Vector3.new(0.4, 0.4, 0.4)
-        part.Shape = Enum.PartType.Ball
-        part.Color = Color3.fromRGB(255, 0, 100)
-        part.Material = Enum.Material.Neon
-        part.CanCollide = false
-        part.Massless = true
-        part.Anchored = false
-        part.CastShadow = false
-        part.Parent = char
-        
-        local weld = Instance.new("Weld")
-        weld.Part0 = hrp
-        weld.Part1 = part
-        weld.Parent = part
-        
-        table.insert(heartParts, {part = part, weld = weld, index = i})
-    end
-    
-    heartConnection = RunService.RenderStepped:Connect(function()
-        local t = tick()
-        for _, data in ipairs(heartParts) do
-            if data.part and data.part.Parent then
-                local angle = t + data.index * (math.pi * 2 / 15)
-                local radius = 2.5
-                local y = math.sin(angle * 2) * 1.5 + math.sin(t * 3) * 0.5
-                data.weld.C0 = CFrame.new(math.cos(angle) * radius, y, math.sin(angle) * radius)
-                data.part.Color = Color3.fromRGB(255, 50, 150)
-            end
-        end
-    end)
+    iceParticles = Instance.new("ParticleEmitter")
+    iceParticles.Texture = "rbxassetid://243660364"
+    iceParticles.LightEmission = 1
+    iceParticles.LightInfluence = 0
+    iceParticles.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(1, 0)
+    })
+    iceParticles.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.3),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    iceParticles.Lifetime = NumberRange.new(1, 2)
+    iceParticles.Rate = 40
+    iceParticles.Speed = NumberRange.new(1, 3)
+    iceParticles.SpreadAngle = Vector2.new(180, 180)
+    iceParticles.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 200, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+    }
+    iceParticles.Parent = iceAttachment
 end
 
 -- ==================== SUBMENUS ====================
@@ -1610,21 +1324,6 @@ submenus["🔥 Fire Aura"].addToggle("Enabled", 35, true, function(v) end)
 createSubmenu("❄️ Ice Aura", 200, 80)
 submenus["❄️ Ice Aura"].addToggle("Enabled", 35, true, function(v) end)
 
-createSubmenu("⚡ Lightning", 200, 80)
-submenus["⚡ Lightning"].addToggle("Enabled", 35, true, function(v) end)
-
-createSubmenu("🫧 Bubbles", 200, 80)
-submenus["🫧 Bubbles"].addToggle("Enabled", 35, true, function(v) end)
-
-createSubmenu("🌈 Rainbow Aura", 200, 80)
-submenus["🌈 Rainbow Aura"].addToggle("Enabled", 35, true, function(v) end)
-
-createSubmenu("⭐ Star Aura", 200, 80)
-submenus["⭐ Star Aura"].addToggle("Enabled", 35, true, function(v) end)
-
-createSubmenu("💖 Heart Aura", 200, 80)
-submenus["💖 Heart Aura"].addToggle("Enabled", 35, true, function(v) end)
-
 -- Theme window
 local themeFrame = Instance.new("Frame")
 themeFrame.Size = UDim2.new(0, 200, 0, 280)
@@ -1737,15 +1436,14 @@ end)
 setupHoldButton(chineseHat, function() submenus["🇨🇳 Chinese Hat"].frame.Visible = true end, function()
     hatActive = not hatActive
     chineseHat.BackgroundColor3 = hatActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if hatActive then createChineseHat() showNotification("🇨🇳 Шляпа", "Китайская шляпа надета!", Color3.fromRGB(255, 200, 0), 2)
+    if hatActive then createChineseHat() showNotification("🇨🇳 Шляпа", "Шляпа надета!", Color3.fromRGB(255, 200, 0), 2)
     else removeChineseHat() showNotification("🇨🇳 Шляпа", "Шляпа снята", Color3.fromRGB(255, 100, 100), 2) end
 end)
 
 setupHoldButton(trailBtn, function() submenus["✨ Trails"].frame.Visible = true end, function()
     trailActive = not trailActive
     trailBtn.BackgroundColor3 = trailActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if trailActive then createTrails() showNotification("✨ Следы", "Следы включены", Color3.fromRGB(255, 0, 255), 2)
-    else removeTrails() showNotification("✨ Следы", "Следы выключены", Color3.fromRGB(255, 100, 100), 2) end
+    if trailActive then createTrails() else removeTrails() end
 end)
 
 setupHoldButton(auraBtn, function() submenus["🔮 Aura"].frame.Visible = true end, function()
@@ -1782,36 +1480,6 @@ setupHoldButton(iceBtn, function() submenus["❄️ Ice Aura"].frame.Visible = t
     iceActive = not iceActive
     iceBtn.BackgroundColor3 = iceActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
     if iceActive then createIce() else removeIce() end
-end)
-
-setupHoldButton(lightningBtn, function() submenus["⚡ Lightning"].frame.Visible = true end, function()
-    lightningActive = not lightningActive
-    lightningBtn.BackgroundColor3 = lightningActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if lightningActive then createLightning() else removeLightning() end
-end)
-
-setupHoldButton(bubblesBtn, function() submenus["🫧 Bubbles"].frame.Visible = true end, function()
-    bubblesActive = not bubblesActive
-    bubblesBtn.BackgroundColor3 = bubblesActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if bubblesActive then createBubbles() else removeBubbles() end
-end)
-
-setupHoldButton(rainbowBtn, function() submenus["🌈 Rainbow Aura"].frame.Visible = true end, function()
-    rainbowAuraActive = not rainbowAuraActive
-    rainbowBtn.BackgroundColor3 = rainbowAuraActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if rainbowAuraActive then createRainbowAura() else removeRainbowAura() end
-end)
-
-setupHoldButton(starBtn, function() submenus["⭐ Star Aura"].frame.Visible = true end, function()
-    starActive = not starActive
-    starBtn.BackgroundColor3 = starActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if starActive then createStar() else removeStar() end
-end)
-
-setupHoldButton(heartBtn, function() submenus["💖 Heart Aura"].frame.Visible = true end, function()
-    heartActive = not heartActive
-    heartBtn.BackgroundColor3 = heartActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if heartActive then createHeart() else removeHeart() end
 end)
 
 -- ==================== EXTRA ====================
@@ -2081,16 +1749,10 @@ LocalPlayer.CharacterAdded:Connect(function(char)
     if petActive then removePet() task.wait(0.5) createPet() end
     if fireActive then removeFire() task.wait(0.5) createFire() end
     if iceActive then removeIce() task.wait(0.5) createIce() end
-    if lightningActive then removeLightning() task.wait(0.5) createLightning() end
-    if bubblesActive then removeBubbles() task.wait(0.5) createBubbles() end
-    if rainbowAuraActive then removeRainbowAura() task.wait(0.5) createRainbowAura() end
-    if starActive then removeStar() task.wait(0.5) createStar() end
-    if heartActive then removeHeart() task.wait(0.5) createHeart() end
     if fixCamActive then savedCamCFrame = workspace.CurrentCamera.CFrame end
 end)
 
-showNotification("🎨 Visual Hub v23.0", "Хаб загружен!\n🇨🇳 Гладкая шляпа\n🔮 +12 визуалов", Color3.fromRGB(0, 200, 255), 5)
+showNotification("🎨 Visual Hub v24.0", "Хаб загружен!\n✨ Визуалы: ПОЧИНЕНЫ!", Color3.fromRGB(0, 200, 255), 5)
 
-print("✅ Visual Hub v23.0 loaded!")
-print("🇨🇳 Chinese Hat: SMOOTH CONE")
-print("🔮 New Visuals: Aura, Wings, Halo, Pet, Fire, Ice, Lightning, Bubbles, Rainbow, Star, Heart")
+print("✅ Visual Hub v24.0 loaded!")
+print("✨ Aura, Wings, Halo, Pet, Fire, Ice: FIXED")
