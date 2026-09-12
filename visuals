@@ -1,7 +1,7 @@
 -- ============================================
--- 🎨 MY VISUAL HUB v26.0 (AZURE MIX)
+-- 🎨 MY VISUAL HUB v27.0 (FIXED)
 -- 👨‍💻 Author: Timur Bodyak
--- 💥 Aura + Azure ESP + Aimbot + Mops Hitsound
+-- 💥 Твой ESP + Aimbot для телефона + Hitsound + Aura
 -- ============================================
 
 pcall(function() task.wait(1) end)
@@ -10,7 +10,6 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
 
 local playerGui = LocalPlayer:WaitForChild("PlayerGui", 10)
@@ -18,7 +17,7 @@ if not playerGui then return end
 
 -- ==================== GUI ====================
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "VisualHubV26"
+screenGui.Name = "VisualHubV27"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = playerGui
@@ -155,7 +154,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -70, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "🎨 Visual Hub v26.0"
+title.Text = "🎨 Visual Hub v27.0"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 13
@@ -263,8 +262,8 @@ end
 local rainbowCrosshair = createButton(mainScroll, "RainbowCrosshair", "🎯 Crosshair (Hold)", 5)
 local rainbowHighlight = createButton(mainScroll, "RainbowHighlight", "🌈 Highlight (Hold)", 38)
 local infoPanel = createButton(mainScroll, "InfoPanel", "📊 Info Panel (Hold)", 71)
-local azureESP = createButton(mainScroll, "AzureESP", "👁️ Azure ESP (Hold)", 104)
-local aimbotBtn = createButton(mainScroll, "AimbotBtn", "🎯 Aimbot (Hold)", 137)
+local universalESP = createButton(mainScroll, "UniversalESP", "👁️ Universal ESP (Hold)", 104)
+local aimbotBtn = createButton(mainScroll, "AimbotBtn", "🎯 Aimbot (Mobile)", 137)
 local speedBtn = createButton(mainScroll, "SpeedBtn", "⚡ Speed (Hold)", 170)
 local jumpBtn = createButton(mainScroll, "JumpBtn", "🦘 Jump (Hold)", 203)
 local flyBtn = createButton(mainScroll, "FlyBtn", "🕊️ Fly (Hold)", 236)
@@ -296,6 +295,47 @@ local trailActive = false
 local auraActive = false
 local hitsoundActive = false
 
+-- ТВОЙ ESP (Box, Skeleton, Text)
+local espSettings = {
+    Box2D = true,
+    Box3D = false,
+    Skeleton = false,
+    Text = true,
+    Monster = true,
+    Players = true,
+    NPCs = true
+}
+
+-- Aimbot (для телефона)
+local aimbotSettings = {
+    Enabled = false,
+    FOV = 100,
+    Smoothing = 0.5,
+    Hitbox = "Head",
+    Prediction = 0.165,
+    ShowFOV = false,
+    FOVColor = Color3.fromRGB(255, 255, 255),
+    TeamCheck = false
+}
+
+local settings = {
+    crosshairSize = 30,
+    crosshairSpeed = 2,
+    highlightTransparency = 0.5,
+    entityESPColor = Color3.fromRGB(255, 0, 255),
+    speed = 60,
+    jumpPower = 80,
+    flySpeed = 50,
+    spinSpeed = 5,
+    hatColor = Color3.fromRGB(255, 200, 0),
+    hatSize = 1,
+    hatMaterial = "Neon",
+    hatTransparency = 0,
+    hatLightEmission = 0.5,
+    hatRainbow = false,
+    trailColor = Color3.fromRGB(255, 0, 255)
+}
+
 -- Aura system
 local aura_ids = {
     angel = "97658130917593",
@@ -317,57 +357,7 @@ for _, name in ipairs(aura_order) do
     selected_auras[name] = false
 end
 
--- ESP settings (Azure-like)
-local espSettings = {
-    Box = false,
-    BoxType = "Normal",
-    BoxColor = Color3.fromRGB(255, 255, 255),
-    BoxOutlineColor = Color3.fromRGB(0, 0, 0),
-    FilledBox = false,
-    Name = false,
-    NameColor = Color3.fromRGB(255, 255, 255),
-    Health = false,
-    HealthColor = Color3.fromRGB(0, 255, 0),
-    Distance = false,
-    DistanceColor = Color3.fromRGB(255, 255, 255),
-    Tracer = false,
-    TracerColor = Color3.fromRGB(255, 255, 255),
-    TracerThickness = 1,
-    Teamcheck = false,
-    WallCheck = false
-}
-
--- Aimbot settings
-local aimbotSettings = {
-    Enabled = false,
-    Keybind = Enum.UserInputType.MouseButton2,
-    FOV = 100,
-    Smoothing = 0.5,
-    Hitbox = "Head",
-    Prediction = 0.165,
-    ShowFOV = false,
-    FOVColor = Color3.fromRGB(255, 255, 255)
-}
-
-local settings = {
-    crosshairSize = 30,
-    crosshairSpeed = 2,
-    highlightTransparency = 0.5,
-    entityESPColor = Color3.fromRGB(255, 0, 255),
-    speed = 60,
-    jumpPower = 80,
-    flySpeed = 50,
-    spinSpeed = 5,
-    hatColor = Color3.fromRGB(255, 200, 0),
-    hatSize = 1,
-    hatMaterial = "Neon",
-    hatTransparency = 0,
-    hatLightEmission = 0.5,
-    hatRainbow = false,
-    trailColor = Color3.fromRGB(255, 0, 255)
-}
-
--- ==================== HITSOUND (FROM MOPS) ====================
+-- Hitsound (Mops)
 local gunshotSounds = {
     ["Alchemist Burst"] = "rbxassetid://130507807370367",
     ["RPGS Candy"]      = "rbxassetid://83995181532586",
@@ -390,41 +380,6 @@ local knifeKillSounds = {
 local selectedGunshot = "RPGS Candy"
 local selectedKnifeKill = "Golden Knife Kill"
 local hooked = {}
-
-local function hookSound(sound)
-    if not sound:IsA("Sound") or hooked[sound] then return end
-    hooked[sound] = true
-    sound.Played:Connect(function()
-        if sound.Name == "Gunshot" and gunshotSounds[selectedGunshot] and sound.SoundId ~= gunshotSounds[selectedGunshot] then
-            sound.SoundId = gunshotSounds[selectedGunshot]
-            sound.TimePosition = 0
-            sound:Play()
-        elseif sound.Name == "Kill" and knifeKillSounds[selectedKnifeKill] and sound.SoundId ~= knifeKillSounds[selectedKnifeKill] then
-            sound.SoundId = knifeKillSounds[selectedKnifeKill]
-            sound.TimePosition = 0
-            sound:Play()
-        end
-    end)
-end
-
-local function startHitsound()
-    hitsoundActive = true
-    workspace.DescendantAdded:Connect(function(d)
-        if hitsoundActive and d:IsA("Sound") and (d.Name == "Gunshot" or d.Name == "Kill") then
-            hookSound(d)
-        end
-    end)
-    for _, d in ipairs(workspace:GetDescendants()) do
-        if d:IsA("Sound") and (d.Name == "Gunshot" or d.Name == "Kill") then
-            hookSound(d)
-        end
-    end
-end
-
-local function stopHitsound()
-    hitsoundActive = false
-    hooked = {}
-end
 
 -- ==================== HOLD HELPER ====================
 local function setupHoldButton(button, onHold, onClick, featureName)
@@ -496,247 +451,278 @@ local function addHighlight(character)
     hl.Parent = character
 end
 
--- ==================== AZURE ESP ====================
+-- ==================== ТВОЙ ESP ====================
 local Drawing = Drawing or (getgenv and getgenv().Drawing)
 local espObjects = {}
 local lastESPScan = 0
 local camera = workspace.CurrentCamera
 
-local function createESPData(target, isPlayer)
+local function isPlayerModel(model)
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr.Character == model then return true end
+    end
+    return false
+end
+
+local function isMonsterModel(model)
+    return model.Name:lower():find("monster") ~= nil
+end
+
+local function isNPCModel(model)
+    if not model:IsA("Model") then return false end
+    if model == LocalPlayer.Character then return false end
+    if isMonsterModel(model) then return true end
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return false end
+    local hrp = model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Torso") or model:FindFirstChild("Head")
+    if not hrp then return false end
+    return true
+end
+
+local function getMainPart(target)
+    return target:FindFirstChild("HumanoidRootPart")
+        or target:FindFirstChild("Torso")
+        or target:FindFirstChild("UpperTorso")
+        or target:FindFirstChild("Head")
+        or target.PrimaryPart
+        or target:FindFirstChildWhichIsA("BasePart")
+end
+
+local function createESPData(target, isPlr, isMons)
     if not Drawing then return nil end
-    local data = {isPlayer = isPlayer}
+    local color = isPlr and Color3.fromRGB(0, 255, 0)
+        or (isMons and Color3.fromRGB(255, 0, 0) or settings.entityESPColor)
+    local data = {isPlayer = isPlr, isMonster = isMons}
     
-    data.box = Drawing.new("Square")
-    data.box.Visible = false
-    data.box.Color = espSettings.BoxColor
-    data.box.Thickness = 1
-    data.box.Filled = false
-    data.box.Transparency = 1
+    data.box2D = {}
+    for i = 1, 4 do
+        local line = Drawing.new("Line")
+        line.Color = color; line.Thickness = 1; line.Visible = false
+        data.box2D[i] = line
+    end
     
-    data.boxOutline = Drawing.new("Square")
-    data.boxOutline.Visible = false
-    data.boxOutline.Color = espSettings.BoxOutlineColor
-    data.boxOutline.Thickness = 3
-    data.boxOutline.Filled = false
-    data.boxOutline.Transparency = 1
-    
-    data.filledBox = Drawing.new("Square")
-    data.filledBox.Visible = false
-    data.filledBox.Color = espSettings.BoxColor
-    data.filledBox.Thickness = 1
-    data.filledBox.Filled = true
-    data.filledBox.Transparency = 0.3
+    data.box3D = {}
+    for i = 1, 12 do
+        local line = Drawing.new("Line")
+        line.Color = color; line.Thickness = 1; line.Visible = false
+        data.box3D[i] = line
+    end
     
     data.name = Drawing.new("Text")
-    data.name.Visible = false
-    data.name.Color = espSettings.NameColor
-    data.name.Size = 13
-    data.name.Center = true
-    data.name.Outline = true
+    data.name.Size = 14; data.name.Center = true; data.name.Outline = true
+    data.name.Color = color; data.name.Visible = false
     
-    data.health = Drawing.new("Line")
-    data.health.Visible = false
-    data.health.Color = espSettings.HealthColor
-    data.health.Thickness = 1
+    data.label = Drawing.new("Text")
+    data.label.Size = 14; data.label.Center = true; data.label.Outline = true
+    data.label.Color = color; data.label.Visible = false
     
-    data.distance = Drawing.new("Text")
-    data.distance.Visible = false
-    data.distance.Color = espSettings.DistanceColor
-    data.distance.Size = 12
-    data.distance.Center = true
-    data.distance.Outline = true
-    
-    data.tracer = Drawing.new("Line")
-    data.tracer.Visible = false
-    data.tracer.Color = espSettings.TracerColor
-    data.tracer.Thickness = espSettings.TracerThickness
+    data.skeleton = {}
+    for i = 1, 6 do
+        local line = Drawing.new("Line")
+        line.Color = color; line.Thickness = 1; line.Visible = false
+        data.skeleton[i] = line
+    end
     
     return data
 end
 
 local function removeESPData(data)
     if not data then return end
-    for _, obj in pairs(data) do
-        if obj and obj.Remove then pcall(function() obj:Remove() end) end
-    end
+    if data.box2D then for _, l in ipairs(data.box2D) do l:Remove() end end
+    if data.box3D then for _, l in ipairs(data.box3D) do l:Remove() end end
+    if data.name then data.name:Remove() end
+    if data.label then data.label:Remove() end
+    if data.skeleton then for _, l in ipairs(data.skeleton) do l:Remove() end end
+end
+
+local function updateESPColor(data, baseColor)
+    if not data then return end
+    local c = baseColor
+    if data.isPlayer then c = Color3.fromRGB(0, 255, 0)
+    elseif data.isMonster then c = Color3.fromRGB(255, 0, 0) end
+    
+    if data.box2D then for _, l in ipairs(data.box2D) do l.Color = c end end
+    if data.box3D then for _, l in ipairs(data.box3D) do l.Color = c end end
+    if data.name then data.name.Color = c end
+    if data.label then data.label.Color = c end
+    if data.skeleton then for _, l in ipairs(data.skeleton) do l.Color = c end end
 end
 
 local function updateESPData(target, data)
-    local char = target.Character or target
-    if not char then
-        for _, obj in pairs(data) do
-            if obj and obj.Visible then obj.Visible = false end
-        end
+    local mainPart = getMainPart(target)
+    if not mainPart then
+        if data.box2D then for _, l in ipairs(data.box2D) do l.Visible = false end end
+        if data.box3D then for _, l in ipairs(data.box3D) do l.Visible = false end end
+        if data.name then data.name.Visible = false end
+        if data.label then data.label.Visible = false end
+        if data.skeleton then for _, l in ipairs(data.skeleton) do l.Visible = false end end
         return
     end
     
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    local head = char:FindFirstChild("Head")
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    
-    if not hrp or not head or not hum then
-        for _, obj in pairs(data) do
-            if obj and obj.Visible then obj.Visible = false end
-        end
-        return
-    end
-    
-    local pos, onScreen = camera:WorldToViewportPoint(hrp.Position)
-    
+    local pos, onScreen = camera:WorldToViewportPoint(mainPart.Position)
     if not onScreen then
-        for _, obj in pairs(data) do
-            if obj and obj.Visible then obj.Visible = false end
-        end
+        if data.box2D then for _, l in ipairs(data.box2D) do l.Visible = false end end
+        if data.box3D then for _, l in ipairs(data.box3D) do l.Visible = false end end
+        if data.name then data.name.Visible = false end
+        if data.label then data.label.Visible = false end
+        if data.skeleton then for _, l in ipairs(data.skeleton) do l.Visible = false end end
         return
     end
     
-    -- Wall check
-    local wallCheck = espSettings.WallCheck
-    local isBehindWall = false
-    if wallCheck then
-        local ray = Ray.new(camera.CFrame.Position, (hrp.Position - camera.CFrame.Position).Unit * (hrp.Position - camera.CFrame.Position).Magnitude)
-        local hit = workspace:FindPartOnRayWithIgnoreList(ray, {LocalPlayer.Character, char})
-        isBehindWall = hit and hit:IsA("Part")
+    local head = target:FindFirstChild("Head")
+    local humanoid = target:FindFirstChildOfClass("Humanoid")
+    local height = 60
+    local width = 40
+    
+    if head and humanoid then
+        local headPos = camera:WorldToViewportPoint(head.Position + Vector3.new(0, 1, 0))
+        local footPos = camera:WorldToViewportPoint(mainPart.Position - Vector3.new(0, humanoid.HipHeight + 1, 0))
+        height = math.abs(headPos.Y - footPos.Y)
+        width = height * 0.6
     end
     
-    -- Team check
-    local teamCheck = espSettings.Teamcheck
-    local sameTeam = false
-    if target:IsA("Player") and teamCheck then
-        sameTeam = target.Team == LocalPlayer.Team
+    local topLeft = Vector2.new(pos.X - width/2, pos.Y - height/2)
+    local topRight = Vector2.new(pos.X + width/2, pos.Y - height/2)
+    local bottomLeft = Vector2.new(pos.X - width/2, pos.Y + height/2)
+    local bottomRight = Vector2.new(pos.X + width/2, pos.Y + height/2)
+    
+    if espSettings.Box2D and data.box2D then
+        data.box2D[1].From = topLeft; data.box2D[1].To = topRight; data.box2D[1].Visible = true
+        data.box2D[2].From = topRight; data.box2D[2].To = bottomRight; data.box2D[2].Visible = true
+        data.box2D[3].From = bottomRight; data.box2D[3].To = bottomLeft; data.box2D[3].Visible = true
+        data.box2D[4].From = bottomLeft; data.box2D[4].To = topLeft; data.box2D[4].Visible = true
+    else
+        if data.box2D then for _, l in ipairs(data.box2D) do l.Visible = false end end
     end
     
-    if isBehindWall or sameTeam then
-        for _, obj in pairs(data) do
-            if obj and obj.Visible then obj.Visible = false end
+    if espSettings.Box3D and data.box3D and mainPart:IsA("BasePart") then
+        local cf = mainPart.CFrame
+        local s = mainPart.Size / 2
+        local corners = {
+            cf * Vector3.new(-s.X, -s.Y, -s.Z), cf * Vector3.new( s.X, -s.Y, -s.Z),
+            cf * Vector3.new( s.X, -s.Y,  s.Z), cf * Vector3.new(-s.X, -s.Y,  s.Z),
+            cf * Vector3.new(-s.X,  s.Y, -s.Z), cf * Vector3.new( s.X,  s.Y, -s.Z),
+            cf * Vector3.new( s.X,  s.Y,  s.Z), cf * Vector3.new(-s.X,  s.Y,  s.Z),
+        }
+        local edges = {{1,2},{2,3},{3,4},{4,1},{5,6},{6,7},{7,8},{8,5},{1,5},{2,6},{3,7},{4,8}}
+        for i, edge in ipairs(edges) do
+            local p1 = camera:WorldToViewportPoint(corners[edge[1]])
+            local p2 = camera:WorldToViewportPoint(corners[edge[2]])
+            if data.box3D[i] then
+                data.box3D[i].From = Vector2.new(p1.X, p1.Y)
+                data.box3D[i].To = Vector2.new(p2.X, p2.Y)
+                data.box3D[i].Visible = true
+            end
         end
-        return
+    else
+        if data.box3D then for _, l in ipairs(data.box3D) do l.Visible = false end end
     end
     
-    -- Box
-    local charSize = (camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0)).Y - camera:WorldToViewportPoint(hrp.Position + Vector3.new(0, 2.6, 0)).Y) / 2
-    local boxSize = Vector2.new(math.floor(charSize * 1.4), math.floor(charSize * 1.9))
-    local boxPos = Vector2.new(math.floor(pos.X - charSize * 1.4 / 2), math.floor(pos.Y - charSize * 1.6 / 2))
+    if espSettings.Text then
+        if data.name then
+            data.name.Text = target.Name
+            data.name.Position = Vector2.new(pos.X, pos.Y - height/2 - 32)
+            data.name.Visible = true
+        end
+        if data.label then
+            if data.isMonster then data.label.Text = "MONSTER"
+            elseif data.isPlayer then data.label.Text = "PLAYER"
+            else data.label.Text = "NPC" end
+            data.label.Position = Vector2.new(pos.X, pos.Y - height/2 - 18)
+            data.label.Visible = true
+        end
+    else
+        if data.name then data.name.Visible = false end
+        if data.label then data.label.Visible = false end
+    end
     
-    if espSettings.Box then
-        if espSettings.BoxType == "Normal" then
-            data.box.Visible = true
-            data.box.Size = boxSize
-            data.box.Position = boxPos
-            data.box.Color = espSettings.BoxColor
-            
-            data.boxOutline.Visible = true
-            data.boxOutline.Size = boxSize
-            data.boxOutline.Position = boxPos
-            data.boxOutline.Color = espSettings.BoxOutlineColor
-        else
-            data.box.Visible = false
-            data.boxOutline.Visible = false
+    if espSettings.Skeleton and data.skeleton then
+        local headP = target:FindFirstChild("Head")
+        local utP = target:FindFirstChild("UpperTorso") or target:FindFirstChild("Torso")
+        local ltP = target:FindFirstChild("LowerTorso") or utP
+        local laP = target:FindFirstChild("LeftUpperArm") or target:FindFirstChild("Left Arm") or target:FindFirstChild("LeftArm")
+        local raP = target:FindFirstChild("RightUpperArm") or target:FindFirstChild("Right Arm") or target:FindFirstChild("RightArm")
+        local llP = target:FindFirstChild("LeftUpperLeg") or target:FindFirstChild("Left Leg") or target:FindFirstChild("LeftLeg")
+        local rlP = target:FindFirstChild("RightUpperLeg") or target:FindFirstChild("Right Leg") or target:FindFirstChild("RightLeg")
+        
+        local function sp(p)
+            if not p then return nil end
+            local v, onScr = camera:WorldToViewportPoint(p.Position)
+            if not onScr then return nil end
+            return Vector2.new(v.X, v.Y)
         end
         
-        if espSettings.FilledBox then
-            data.filledBox.Visible = true
-            data.filledBox.Size = boxSize
-            data.filledBox.Position = boxPos
-            data.filledBox.Color = espSettings.BoxColor
-        else
-            data.filledBox.Visible = false
+        local h = sp(headP); local ut = sp(utP); local lt = sp(ltP)
+        local la = sp(laP); local ra = sp(raP); local ll = sp(llP); local rl = sp(rlP)
+        
+        local function setLine(i, f, t)
+            if f and t then data.skeleton[i].From = f data.skeleton[i].To = t data.skeleton[i].Visible = true
+            else data.skeleton[i].Visible = false end
         end
+        
+        setLine(1, h, ut); setLine(2, ut, lt); setLine(3, ut, la)
+        setLine(4, ut, ra); setLine(5, lt, ll); setLine(6, lt, rl)
     else
-        data.box.Visible = false
-        data.boxOutline.Visible = false
-        data.filledBox.Visible = false
-    end
-    
-    -- Name
-    if espSettings.Name and target:IsA("Player") then
-        data.name.Visible = true
-        data.name.Text = string.lower(target.Name)
-        data.name.Position = Vector2.new(boxPos.X + boxSize.X / 2, boxPos.Y - 16)
-        data.name.Color = espSettings.NameColor
-    else
-        data.name.Visible = false
-    end
-    
-    -- Health
-    if espSettings.Health and hum then
-        data.health.Visible = true
-        local healthPct = hum.Health / hum.MaxHealth
-        local barHeight = boxSize.Y * healthPct
-        data.health.From = Vector2.new(boxPos.X - 6, boxPos.Y + boxSize.Y)
-        data.health.To = Vector2.new(boxPos.X - 6, boxPos.Y + boxSize.Y - barHeight)
-        data.health.Color = espSettings.HealthColor
-    else
-        data.health.Visible = false
-    end
-    
-    -- Distance
-    if espSettings.Distance then
-        data.distance.Visible = true
-        local dist = (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart"))
-            and (LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude or 0
-        data.distance.Text = string.format("%.1f studs", dist)
-        data.distance.Position = Vector2.new(boxPos.X + boxSize.X / 2, boxPos.Y + boxSize.Y + 5)
-        data.distance.Color = espSettings.DistanceColor
-    else
-        data.distance.Visible = false
-    end
-    
-    -- Tracer
-    if espSettings.Tracer then
-        data.tracer.Visible = true
-        data.tracer.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
-        data.tracer.To = Vector2.new(pos.X, pos.Y)
-        data.tracer.Color = espSettings.TracerColor
-    else
-        data.tracer.Visible = false
+        if data.skeleton then for _, l in ipairs(data.skeleton) do l.Visible = false end end
     end
 end
 
 local function scanESP()
     if not espActive then return end
     
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            if not espObjects[player] then
-                espObjects[player] = createESPData(player, true)
+    if espSettings.Players then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                if not espObjects[player.Character] then
+                    espObjects[player.Character] = createESPData(player.Character, true, false)
+                end
+            end
+        end
+    end
+    
+    for _, obj in ipairs(workspace:GetChildren()) do
+        if isNPCModel(obj) then
+            local mons = isMonsterModel(obj)
+            if (mons and espSettings.Monster) or (not mons and espSettings.NPCs) then
+                if not espObjects[obj] then
+                    espObjects[obj] = createESPData(obj, false, mons)
+                end
             end
         end
     end
     
     for target, data in pairs(espObjects) do
-        if target.Character then
-            updateESPData(target, data)
-        else
-            for _, obj in pairs(data) do
-                if obj and obj.Visible then obj.Visible = false end
-            end
+        if not target or not target.Parent then
+            removeESPData(data)
+            espObjects[target] = nil
         end
     end
 end
 
 local function clearAllESP()
-    for _, data in pairs(espObjects) do
-        removeESPData(data)
-    end
+    for _, data in pairs(espObjects) do removeESPData(data) end
     espObjects = {}
 end
 
--- ==================== AIMBOT ====================
+-- ==================== AIMBOT ДЛЯ ТЕЛЕФОНА ====================
 local fovCircle = nil
 local aimbotConnection = nil
+local aimbotToggle = false
 
 local function getClosestPlayer()
     local closest = nil
     local shortest = aimbotSettings.FOV
+    local mousePos = UserInputService:GetMouseLocation()
     
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
+            if aimbotSettings.TeamCheck and player.Team == LocalPlayer.Team then
+                continue
+            end
             local hrp = player.Character:FindFirstChild(aimbotSettings.Hitbox)
             if hrp then
                 local pos, onScreen = camera:WorldToViewportPoint(hrp.Position)
                 if onScreen then
-                    local mousePos = UserInputService:GetMouseLocation()
                     local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
                     if dist < shortest then
                         shortest = dist
@@ -768,7 +754,7 @@ local function startAimbot()
             fovCircle.Color = aimbotSettings.FOVColor
         end
         
-        if aimbotSettings.Enabled and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+        if aimbotSettings.Enabled and aimbotToggle then
             local target = getClosestPlayer()
             if target and target.Character then
                 local hrp = target.Character:FindFirstChild(aimbotSettings.Hitbox)
@@ -918,7 +904,7 @@ local function createTrails()
     trailObjects[char] = {trail = trail, att0 = att0, att1 = att1}
 end
 
--- ==================== AURA (FROM MOPS) ====================
+-- ==================== AURA ====================
 local function clearAura()
     for _, particle in ipairs(aura_particles) do
         pcall(function() particle:Destroy() end)
@@ -983,6 +969,42 @@ end
 local function createAura()
     aura_active = true
     applyAura()
+end
+
+-- ==================== HITSOUND ====================
+local function hookSound(sound)
+    if not sound:IsA("Sound") or hooked[sound] then return end
+    hooked[sound] = true
+    sound.Played:Connect(function()
+        if sound.Name == "Gunshot" and gunshotSounds[selectedGunshot] and sound.SoundId ~= gunshotSounds[selectedGunshot] then
+            sound.SoundId = gunshotSounds[selectedGunshot]
+            sound.TimePosition = 0
+            sound:Play()
+        elseif sound.Name == "Kill" and knifeKillSounds[selectedKnifeKill] and sound.SoundId ~= knifeKillSounds[selectedKnifeKill] then
+            sound.SoundId = knifeKillSounds[selectedKnifeKill]
+            sound.TimePosition = 0
+            sound:Play()
+        end
+    end)
+end
+
+local function startHitsound()
+    hitsoundActive = true
+    workspace.DescendantAdded:Connect(function(d)
+        if hitsoundActive and d:IsA("Sound") and (d.Name == "Gunshot" or d.Name == "Kill") then
+            hookSound(d)
+        end
+    end)
+    for _, d in ipairs(workspace:GetDescendants()) do
+        if d:IsA("Sound") and (d.Name == "Gunshot" or d.Name == "Kill") then
+            hookSound(d)
+        end
+    end
+end
+
+local function stopHitsound()
+    hitsoundActive = false
+    hooked = {}
 end
 
 -- ==================== SUBMENUS ====================
@@ -1129,24 +1151,23 @@ createSubmenu("📊 Info Panel", 200, 130)
 submenus["📊 Info Panel"].addToggle("Show FPS", 35, true, function(v) end)
 submenus["📊 Info Panel"].addToggle("Show Ping", 65, true, function(v) end)
 
--- Azure ESP submenu
-createSubmenu("👁️ Azure ESP", 220, 420)
-submenus["👁️ Azure ESP"].addToggle("Box", 35, false, function(v) espSettings.Box = v end)
-submenus["👁️ Azure ESP"].addToggle("Filled Box", 65, false, function(v) espSettings.FilledBox = v end)
-submenus["👁️ Azure ESP"].addToggle("Name", 95, false, function(v) espSettings.Name = v end)
-submenus["👁️ Azure ESP"].addToggle("Health", 125, false, function(v) espSettings.Health = v end)
-submenus["👁️ Azure ESP"].addToggle("Distance", 155, false, function(v) espSettings.Distance = v end)
-submenus["👁️ Azure ESP"].addToggle("Tracer", 185, false, function(v) espSettings.Tracer = v end)
-submenus["👁️ Azure ESP"].addToggle("Team Check", 215, false, function(v) espSettings.Teamcheck = v end)
-submenus["👁️ Azure ESP"].addToggle("Wall Check", 245, false, function(v) espSettings.WallCheck = v end)
+createSubmenu("👁️ ESP", 200, 260)
+submenus["👁️ ESP"].addToggle("2D Box", 35, espSettings.Box2D, function(v) espSettings.Box2D = v end)
+submenus["👁️ ESP"].addToggle("3D Box", 65, espSettings.Box3D, function(v) espSettings.Box3D = v end)
+submenus["👁️ ESP"].addToggle("Skeleton", 95, espSettings.Skeleton, function(v) espSettings.Skeleton = v end)
+submenus["👁️ ESP"].addToggle("Text", 125, espSettings.Text, function(v) espSettings.Text = v end)
+submenus["👁️ ESP"].addToggle("Players", 155, espSettings.Players, function(v) espSettings.Players = v end)
+submenus["👁️ ESP"].addToggle("NPCs", 185, espSettings.NPCs, function(v) espSettings.NPCs = v end)
+submenus["👁️ ESP"].addToggle("Monster", 215, espSettings.Monster, function(v) espSettings.Monster = v end)
 
--- Aimbot submenu
+-- Aimbot submenu (для телефона)
 createSubmenu("🎯 Aimbot", 220, 350)
 submenus["🎯 Aimbot"].addToggle("Enabled", 35, false, function(v) aimbotSettings.Enabled = v end)
 submenus["🎯 Aimbot"].addToggle("Show FOV", 65, false, function(v) aimbotSettings.ShowFOV = v end)
-submenus["🎯 Aimbot"].addSlider("FOV", 95, 50, 300, 100, function(v) aimbotSettings.FOV = v end)
-submenus["🎯 Aimbot"].addSlider("Smoothing", 140, 0.1, 1, 0.5, function(v) aimbotSettings.Smoothing = v end)
-submenus["🎯 Aimbot"].addSlider("Prediction", 185, 0, 0.5, 0.165, function(v) aimbotSettings.Prediction = v end)
+submenus["🎯 Aimbot"].addToggle("Team Check", 95, false, function(v) aimbotSettings.TeamCheck = v end)
+submenus["🎯 Aimbot"].addSlider("FOV", 130, 50, 300, 100, function(v) aimbotSettings.FOV = v end)
+submenus["🎯 Aimbot"].addSlider("Smoothing", 175, 0.1, 1, 0.5, function(v) aimbotSettings.Smoothing = v end)
+submenus["🎯 Aimbot"].addSlider("Prediction", 220, 0, 0.5, 0.165, function(v) aimbotSettings.Prediction = v end)
 
 createSubmenu("⚡ Speed", 200, 80)
 submenus["⚡ Speed"].addSlider("Speed", 35, 16, 300, settings.speed, function(v) settings.speed = v end)
@@ -1226,7 +1247,7 @@ auraScroll.BackgroundTransparency = 1
 auraScroll.BorderSizePixel = 0
 auraScroll.ScrollBarThickness = 3
 auraScroll.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
-auraScroll.CanvasSize = UDim2.new(0, 0, #aura_order * 30 + 10, 0)
+auraScroll.CanvasSize = UDim2.new(0, 0, 0, #aura_order * 30 + 10)
 auraScroll.Parent = submenus["🔮 Aura"].frame
 
 local auraButtons = {}
@@ -1406,26 +1427,24 @@ setupHoldButton(infoPanel, function() submenus["📊 Info Panel"].frame.Visible 
     infoPanel.BackgroundColor3 = infoActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
 end)
 
-setupHoldButton(azureESP, function() submenus["👁️ Azure ESP"].frame.Visible = true end, function()
+setupHoldButton(universalESP, function() submenus["👁️ ESP"].frame.Visible = true end, function()
     espActive = not espActive
-    azureESP.BackgroundColor3 = espActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if espActive then
-        showNotification("👁️ Azure ESP", "ESP включён", Color3.fromRGB(0, 200, 255), 2)
-    else
-        clearAllESP()
-        showNotification("👁️ Azure ESP", "ESP выключен", Color3.fromRGB(255, 100, 100), 2)
-    end
+    universalESP.BackgroundColor3 = espActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
+    if not espActive then clearAllESP() end
 end)
 
-setupHoldButton(aimbotBtn, function() submenus["🎯 Aimbot"].frame.Visible = true end, function()
-    aimbotActive = not aimbotActive
-    aimbotBtn.BackgroundColor3 = aimbotActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
-    if aimbotActive then
+-- Aimbot — не по зажатию, а по нажатию + отдельная кнопка "FIRE" для телефона
+aimbotBtn.MouseButton1Click:Connect(function()
+    aimbotToggle = not aimbotToggle
+    aimbotBtn.BackgroundColor3 = aimbotToggle and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(40, 40, 50)
+    if aimbotToggle then
+        aimbotSettings.Enabled = true
         startAimbot()
-        showNotification("🎯 Aimbot", "Aimbot включён\n🖱️ Правая кнопка мыши — аим", Color3.fromRGB(255, 0, 0), 3)
+        showNotification("🎯 Aimbot", "Aimbot АКТИВЕН!\nНажми кнопку FIRE для аима", Color3.fromRGB(255, 0, 0), 3)
     else
+        aimbotSettings.Enabled = false
         stopAimbot()
-        showNotification("🎯 Aimbot", "Aimbot выключен", Color3.fromRGB(255, 100, 100), 2)
+        showNotification("🎯 Aimbot", "Aimbot ВЫКЛЮЧЕН", Color3.fromRGB(255, 100, 100), 2)
     end
 end)
 
@@ -1561,9 +1580,16 @@ RunService.RenderStepped:Connect(function(dt)
         end
         
         if espActive then
-            if tick() - lastESPScan >= 0.1 then
+            if tick() - lastESPScan >= 0.5 then
                 lastESPScan = tick()
                 scanESP()
+            end
+            for target, data in pairs(espObjects) do
+                if target and target.Parent then
+                    local baseC = espColorFixed and settings.entityESPColor or color
+                    updateESPColor(data, baseC)
+                    updateESPData(target, data)
+                end
             end
         end
         
@@ -1744,7 +1770,9 @@ LocalPlayer.CharacterAdded:Connect(function(char)
     if fixCamActive then savedCamCFrame = workspace.CurrentCamera.CFrame end
 end)
 
-showNotification("🎨 Visual Hub v26.0", "Хаб загружен!\n👁️ Azure ESP\n🎯 Aimbot\n🔊 Hitsound", Color3.fromRGB(0, 200, 255), 5)
+showNotification("🎨 Visual Hub v27.0", "Хаб загружен!\n👁️ ESP + 🎯 Aimbot (Mobile)\n🔊 Hitsound + 🔮 Aura", Color3.fromRGB(0, 200, 255), 5)
 
-print("✅ Visual Hub v26.0 loaded!")
-print("👁️ Azure ESP + 🎯 Aimbot + 🔊 Hitsound")
+print("✅ Visual Hub v27.0 loaded!")
+print("👁️ Твой ESP (Box, Skeleton, Text)")
+print("🎯 Aimbot для телефона (нажми кнопку)")
+print("🔊 Hitsound + 🔮 Aura")
