@@ -1,7 +1,7 @@
 -- ============================================
--- 🎨 MY VISUAL HUB v27.0 (FIXED)
+-- 🎨 MY VISUAL HUB v28.0 (INFO + NPC FIXED)
 -- 👨‍💻 Author: Timur Bodyak
--- 💥 Твой ESP + Aimbot для телефона + Hitsound + Aura
+-- 💥 Info Panel + NPC ESP FIXED
 -- ============================================
 
 pcall(function() task.wait(1) end)
@@ -17,7 +17,7 @@ if not playerGui then return end
 
 -- ==================== GUI ====================
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "VisualHubV27"
+screenGui.Name = "VisualHubV28"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = playerGui
@@ -154,7 +154,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -70, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "🎨 Visual Hub v27.0"
+title.Text = "🎨 Visual Hub v28.0"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 13
@@ -294,8 +294,38 @@ local hatActive = false
 local trailActive = false
 local auraActive = false
 local hitsoundActive = false
+local lastSpeedUpdate = tick()
+local savedCamCFrame = nil
+local spinGyro = nil
 
--- ТВОЙ ESP (Box, Skeleton, Text)
+-- ==================== INFO PANEL (ВАЖНО: СОЗДАЁТСЯ ВЫШЕ ЦИКЛА) ====================
+local infoFrame = Instance.new("Frame")
+infoFrame.Size = UDim2.new(0, 120, 0, 40)
+infoFrame.Position = UDim2.new(0.5, -60, 0, 10)
+infoFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+infoFrame.BorderSizePixel = 0
+infoFrame.Visible = false
+infoFrame.Active = true
+infoFrame.Draggable = true
+infoFrame.Parent = screenGui
+
+local ic = Instance.new("UICorner") ic.CornerRadius = UDim.new(0, 8) ic.Parent = infoFrame
+local is_ = Instance.new("UIStroke") is_.Thickness = 2 is_.Color = Color3.fromRGB(255, 0, 0) is_.Parent = infoFrame
+local ig = Instance.new("UIGradient") ig.Color = buildGradient(gradient2Colors) ig.Parent = is_
+
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Size = UDim2.new(1, -10, 1, -10)
+infoLabel.Position = UDim2.new(0, 5, 0, 5)
+infoLabel.BackgroundTransparency = 1
+infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+infoLabel.Font = Enum.Font.Gotham
+infoLabel.TextSize = 10
+infoLabel.TextXAlignment = Enum.TextXAlignment.Left
+infoLabel.TextYAlignment = Enum.TextYAlignment.Top
+infoLabel.Text = "FPS: 0\nPing: 0"
+infoLabel.Parent = infoFrame
+
+-- ТВОЙ ESP
 local espSettings = {
     Box2D = true,
     Box3D = false,
@@ -336,7 +366,7 @@ local settings = {
     trailColor = Color3.fromRGB(255, 0, 255)
 }
 
--- Aura system
+-- Aura
 local aura_ids = {
     angel = "97658130917593",
     starlight = "134645216613107",
@@ -357,7 +387,7 @@ for _, name in ipairs(aura_order) do
     selected_auras[name] = false
 end
 
--- Hitsound (Mops)
+-- Hitsound
 local gunshotSounds = {
     ["Alchemist Burst"] = "rbxassetid://130507807370367",
     ["RPGS Candy"]      = "rbxassetid://83995181532586",
@@ -451,7 +481,7 @@ local function addHighlight(character)
     hl.Parent = character
 end
 
--- ==================== ТВОЙ ESP ====================
+-- ==================== ТВОЙ ESP (ФИКС) ====================
 local Drawing = Drawing or (getgenv and getgenv().Drawing)
 local espObjects = {}
 local lastESPScan = 0
@@ -471,10 +501,14 @@ end
 local function isNPCModel(model)
     if not model:IsA("Model") then return false end
     if model == LocalPlayer.Character then return false end
+    if isPlayerModel(model) then return false end
     if isMonsterModel(model) then return true end
     local humanoid = model:FindFirstChildOfClass("Humanoid")
     if not humanoid then return false end
-    local hrp = model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Torso") or model:FindFirstChild("Head")
+    local hrp = model:FindFirstChild("HumanoidRootPart") 
+        or model:FindFirstChild("Torso") 
+        or model:FindFirstChild("UpperTorso")
+        or model:FindFirstChild("Head")
     if not hrp then return false end
     return true
 end
@@ -667,6 +701,7 @@ local function updateESPData(target, data)
     end
 end
 
+-- ФИКС: рекурсивный поиск NPC
 local function scanESP()
     if not espActive then return end
     
@@ -680,12 +715,17 @@ local function scanESP()
         end
     end
     
-    for _, obj in ipairs(workspace:GetChildren()) do
-        if isNPCModel(obj) then
-            local mons = isMonsterModel(obj)
-            if (mons and espSettings.Monster) or (not mons and espSettings.NPCs) then
-                if not espObjects[obj] then
-                    espObjects[obj] = createESPData(obj, false, mons)
+    if espSettings.NPCs or espSettings.Monster then
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj:IsA("Model") then
+                local mons = isMonsterModel(obj)
+                local isNPC = isNPCModel(obj)
+                if isNPC then
+                    if (mons and espSettings.Monster) or (not mons and espSettings.NPCs) then
+                        if not espObjects[obj] then
+                            espObjects[obj] = createESPData(obj, false, mons)
+                        end
+                    end
                 end
             end
         end
@@ -1160,7 +1200,6 @@ submenus["👁️ ESP"].addToggle("Players", 155, espSettings.Players, function(
 submenus["👁️ ESP"].addToggle("NPCs", 185, espSettings.NPCs, function(v) espSettings.NPCs = v end)
 submenus["👁️ ESP"].addToggle("Monster", 215, espSettings.Monster, function(v) espSettings.Monster = v end)
 
--- Aimbot submenu (для телефона)
 createSubmenu("🎯 Aimbot", 220, 350)
 submenus["🎯 Aimbot"].addToggle("Enabled", 35, false, function(v) aimbotSettings.Enabled = v end)
 submenus["🎯 Aimbot"].addToggle("Show FOV", 65, false, function(v) aimbotSettings.ShowFOV = v end)
@@ -1214,7 +1253,6 @@ submenus["🇨🇳 Chinese Hat"].addToggle("Rainbow", 200, false, function(v) se
 createSubmenu("✨ Trails", 200, 130)
 submenus["✨ Trails"].addSlider("Length", 35, 0.1, 5, 1, function(v) end)
 
--- Aura submenu
 createSubmenu("🔮 Aura", 220, 420)
 
 local auraStatus = Instance.new("TextLabel")
@@ -1336,7 +1374,6 @@ auraAllBtn.MouseButton1Click:Connect(function()
     auraAllBtn.Text = allOn and "NONE" or "ALL"
 end)
 
--- Hitsound submenu
 createSubmenu("🔊 Hitsound", 220, 400)
 
 local gunLabel = Instance.new("TextLabel")
@@ -1433,14 +1470,13 @@ setupHoldButton(universalESP, function() submenus["👁️ ESP"].frame.Visible =
     if not espActive then clearAllESP() end
 end)
 
--- Aimbot — не по зажатию, а по нажатию + отдельная кнопка "FIRE" для телефона
 aimbotBtn.MouseButton1Click:Connect(function()
     aimbotToggle = not aimbotToggle
     aimbotBtn.BackgroundColor3 = aimbotToggle and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(40, 40, 50)
     if aimbotToggle then
         aimbotSettings.Enabled = true
         startAimbot()
-        showNotification("🎯 Aimbot", "Aimbot АКТИВЕН!\nНажми кнопку FIRE для аима", Color3.fromRGB(255, 0, 0), 3)
+        showNotification("🎯 Aimbot", "Aimbot АКТИВЕН!", Color3.fromRGB(255, 0, 0), 3)
     else
         aimbotSettings.Enabled = false
         stopAimbot()
@@ -1534,10 +1570,6 @@ minimizeBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==================== MAIN LOOP ====================
-local lastSpeedUpdate = tick()
-local savedCamCFrame = nil
-local spinGyro = nil
-
 RunService.RenderStepped:Connect(function(dt)
     pcall(function()
         camera = workspace.CurrentCamera
@@ -1731,32 +1763,6 @@ function stopSpin()
     if spinGyro then spinGyro:Destroy() spinGyro = nil end
 end
 
--- ==================== INFO PANEL ====================
-local infoFrame = Instance.new("Frame")
-infoFrame.Size = UDim2.new(0, 120, 0, 40)
-infoFrame.Position = UDim2.new(0.5, -60, 0, 10)
-infoFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-infoFrame.BorderSizePixel = 0
-infoFrame.Visible = false
-infoFrame.Active = true
-infoFrame.Draggable = true
-infoFrame.Parent = screenGui
-local ic = Instance.new("UICorner") ic.CornerRadius = UDim.new(0, 8) ic.Parent = infoFrame
-local is_ = Instance.new("UIStroke") is_.Thickness = 2 is_.Color = Color3.fromRGB(255, 0, 0) is_.Parent = infoFrame
-local ig = Instance.new("UIGradient") ig.Color = buildGradient(gradient2Colors) ig.Parent = is_
-
-local infoLabel = Instance.new("TextLabel")
-infoLabel.Size = UDim2.new(1, -10, 1, -10)
-infoLabel.Position = UDim2.new(0, 5, 0, 5)
-infoLabel.BackgroundTransparency = 1
-infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-infoLabel.Font = Enum.Font.Gotham
-infoLabel.TextSize = 10
-infoLabel.TextXAlignment = Enum.TextXAlignment.Left
-infoLabel.TextYAlignment = Enum.TextYAlignment.Top
-infoLabel.Text = "FPS: 0\nPing: 0"
-infoLabel.Parent = infoFrame
-
 -- ==================== RESPAWN ====================
 LocalPlayer.CharacterAdded:Connect(function(char)
     task.wait(1)
@@ -1770,9 +1776,8 @@ LocalPlayer.CharacterAdded:Connect(function(char)
     if fixCamActive then savedCamCFrame = workspace.CurrentCamera.CFrame end
 end)
 
-showNotification("🎨 Visual Hub v27.0", "Хаб загружен!\n👁️ ESP + 🎯 Aimbot (Mobile)\n🔊 Hitsound + 🔮 Aura", Color3.fromRGB(0, 200, 255), 5)
+showNotification("🎨 Visual Hub v28.0", "Хаб загружен!\n📊 Info Panel: FIXED\n👁️ NPC ESP: FIXED", Color3.fromRGB(0, 200, 255), 5)
 
-print("✅ Visual Hub v27.0 loaded!")
-print("👁️ Твой ESP (Box, Skeleton, Text)")
-print("🎯 Aimbot для телефона (нажми кнопку)")
-print("🔊 Hitsound + 🔮 Aura")
+print("✅ Visual Hub v28.0 loaded!")
+print("📊 Info Panel: FIXED (выше цикла)")
+print("👁️ NPC ESP: FIXED (GetDescendants)")
