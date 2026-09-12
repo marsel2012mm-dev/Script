@@ -1,13 +1,11 @@
 -- ============================================
--- 🎨 MY VISUAL HUB v5.0 (FINAL)
+-- 🎨 MY VISUAL HUB v5.2 (SCROLL + FIXED CROSSHAIR)
 -- 👨‍💻 Author: Timur Bodyak
--- 💥 Fixed Crosshair + NPC ESP + Draggable + Rainbow Edges
+-- 💥 Fixed Crosshair + Smaller GUI + Scrolling
 -- ============================================
 
 -- ==================== ERROR PROTECTION ====================
-local success, err = pcall(function()
-    task.wait(1)
-end)
+pcall(function() task.wait(1) end)
 
 -- ==================== SERVICES ====================
 local Players = game:GetService("Players")
@@ -18,7 +16,7 @@ local LocalPlayer = Players.LocalPlayer
 
 -- ==================== SAFE PLAYERGUI ====================
 local playerGui
-local guiSuccess, guiErr = pcall(function()
+local guiSuccess = pcall(function()
     playerGui = LocalPlayer:WaitForChild("PlayerGui", 10)
 end)
 
@@ -29,14 +27,28 @@ end
 
 -- ==================== GUI ====================
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MyVisualHubV5"
+screenGui.Name = "MyVisualHubV52"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = playerGui
 
--- ==================== MAIN FRAME ====================
+-- ==================== GRADIENT COLORS ====================
+local rainbowColors = {
+    Color3.fromRGB(255, 0, 0),
+    Color3.fromRGB(255, 165, 0),
+    Color3.fromRGB(255, 255, 0),
+    Color3.fromRGB(0, 255, 0),
+    Color3.fromRGB(0, 255, 255),
+    Color3.fromRGB(0, 0, 255),
+    Color3.fromRGB(255, 0, 255)
+}
+
+local gradient1Colors = {table.unpack(rainbowColors)}
+local gradient2Colors = {table.unpack(rainbowColors)}
+
+-- ==================== MAIN FRAME (SMALLER) ====================
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 260, 0, 400)
+mainFrame.Size = UDim2.new(0, 200, 0, 280) -- Уменьшено
 mainFrame.Position = UDim2.new(0, 20, 0, 20)
 mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 mainFrame.BorderSizePixel = 0
@@ -45,173 +57,143 @@ mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 
 local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 16)
+mainCorner.CornerRadius = UDim.new(0, 12)
 mainCorner.Parent = mainFrame
 
 local mainGradient = Instance.new("UIGradient")
 mainGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 15, 20)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 35))
+    ColorSequenceKeypoint.new(0, gradient1Colors[1]),
+    ColorSequenceKeypoint.new(0.16, gradient1Colors[2]),
+    ColorSequenceKeypoint.new(0.33, gradient1Colors[3]),
+    ColorSequenceKeypoint.new(0.5, gradient1Colors[4]),
+    ColorSequenceKeypoint.new(0.66, gradient1Colors[5]),
+    ColorSequenceKeypoint.new(0.83, gradient1Colors[6]),
+    ColorSequenceKeypoint.new(1, gradient1Colors[7])
 }
 mainGradient.Rotation = 45
 mainGradient.Parent = mainFrame
 
--- Rainbow Edge for Main Frame
 local mainStroke = Instance.new("UIStroke")
-mainStroke.Thickness = 3
+mainStroke.Thickness = 2
 mainStroke.Color = Color3.fromRGB(255, 0, 0)
-mainStroke.Transparency = 0
 mainStroke.Parent = mainFrame
 
 local mainStrokeGradient = Instance.new("UIGradient")
-mainStrokeGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
-    ColorSequenceKeypoint.new(0.16, Color3.fromRGB(255, 165, 0)),
-    ColorSequenceKeypoint.new(0.33, Color3.fromRGB(255, 255, 0)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 0)),
-    ColorSequenceKeypoint.new(0.66, Color3.fromRGB(0, 255, 255)),
-    ColorSequenceKeypoint.new(0.83, Color3.fromRGB(0, 0, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 255))
-}
+mainStrokeGradient.Color = mainGradient.Color
 mainStrokeGradient.Parent = mainStroke
 
 -- ==================== TITLE BAR ====================
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 45)
+titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
 titleBar.BackgroundTransparency = 0.3
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
 local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 16)
+titleCorner.CornerRadius = UDim.new(0, 12)
 titleCorner.Parent = titleBar
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -90, 1, 0)
-title.Position = UDim2.new(0, 15, 0, 0)
+title.Size = UDim2.new(1, -70, 1, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "🎨 Visual Hub v5.0"
+title.Text = "🎨 Visual Hub"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 18
+title.TextSize = 15
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = titleBar
 
 -- ==================== CONTROL BUTTONS ====================
 local minimizeBtn = Instance.new("TextButton")
-minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-minimizeBtn.Position = UDim2.new(1, -70, 0, 7)
+minimizeBtn.Size = UDim2.new(0, 25, 0, 25)
+minimizeBtn.Position = UDim2.new(1, -55, 0, 5)
 minimizeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 minimizeBtn.Text = "—"
 minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 minimizeBtn.Font = Enum.Font.GothamBold
-minimizeBtn.TextSize = 16
+minimizeBtn.TextSize = 14
 minimizeBtn.AutoButtonColor = false
 minimizeBtn.Parent = titleBar
 
 local minCorner = Instance.new("UICorner")
-minCorner.CornerRadius = UDim.new(0, 8)
+minCorner.CornerRadius = UDim.new(0, 6)
 minCorner.Parent = minimizeBtn
 
 local themeBtn = Instance.new("TextButton")
-themeBtn.Size = UDim2.new(0, 30, 0, 30)
-themeBtn.Position = UDim2.new(1, -35, 0, 7)
+themeBtn.Size = UDim2.new(0, 25, 0, 25)
+themeBtn.Position = UDim2.new(1, -28, 0, 5)
 themeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 themeBtn.Text = "⚙"
 themeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 themeBtn.Font = Enum.Font.GothamBold
-themeBtn.TextSize = 16
+themeBtn.TextSize = 14
 themeBtn.AutoButtonColor = false
 themeBtn.Parent = titleBar
 
 local themeCorner = Instance.new("UICorner")
-themeCorner.CornerRadius = UDim.new(0, 8)
+themeCorner.CornerRadius = UDim.new(0, 6)
 themeCorner.Parent = themeBtn
 
--- ==================== HOVER ANIMATION ====================
-local function addHoverEffect(button, normalColor, hoverColor)
-    button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {
-            BackgroundColor3 = hoverColor
-        }):Play()
-    end)
-    
-    button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {
-            BackgroundColor3 = normalColor
-        }):Play()
-    end)
-end
+-- ==================== SCROLLING FRAME ====================
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(1, 0, 1, -40)
+scrollFrame.Position = UDim2.new(0, 0, 0, 40)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.BorderSizePixel = 0
+scrollFrame.ScrollBarThickness = 4
+scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 200, 100)
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 400) -- Высота для скролла
+scrollFrame.Parent = mainFrame
 
 -- ==================== BUTTON FUNCTION ====================
 local function createButton(name, text, yPos)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 220, 0, 38)
-    btn.Position = UDim2.new(0, 20, 0, yPos)
+    btn.Size = UDim2.new(0, 170, 0, 32)
+    btn.Position = UDim2.new(0, 15, 0, yPos)
     btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
     btn.Text = text
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.Gotham
-    btn.TextSize = 14
+    btn.TextSize = 13
     btn.Name = name
     btn.AutoButtonColor = false
-    btn.Parent = mainFrame
+    btn.Parent = scrollFrame
     
     local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 10)
+    btnCorner.CornerRadius = UDim.new(0, 8)
     btnCorner.Parent = btn
-    
-    local btnStroke = Instance.new("UIStroke")
-    btnStroke.Thickness = 1
-    btnStroke.Color = Color3.fromRGB(80, 80, 100)
-    btnStroke.Transparency = 0.5
-    btnStroke.Parent = btn
-    
-    addHoverEffect(btn, Color3.fromRGB(40, 40, 50), Color3.fromRGB(55, 55, 70))
     
     return btn
 end
 
 -- ==================== BUTTONS ====================
-local rainbowCrosshair = createButton("RainbowCrosshair", "🎯 Rainbow Crosshair", 55)
-local rainbowHighlight = createButton("RainbowHighlight", "🌈 Rainbow Highlight", 98)
-local infoPanel = createButton("InfoPanel", "📊 Info Panel", 141)
-local entityESP = createButton("EntityESP", "👾 NPC ESP", 184)
-local settingsBtn = createButton("SettingsBtn", "⚙️ Settings", 227)
+local rainbowCrosshair = createButton("RainbowCrosshair", "🎯 Rainbow Crosshair", 5)
+local rainbowHighlight = createButton("RainbowHighlight", "🌈 Rainbow Highlight", 42)
+local infoPanel = createButton("InfoPanel", "📊 Info Panel", 79)
+local entityESP = createButton("EntityESP", "👾 NPC ESP", 116)
+local gradientBtn = createButton("GradientBtn", "🎨 Gradient Settings", 153)
+local settingsBtn = createButton("SettingsBtn", "⚙️ Settings", 190)
 
 -- ==================== VARIABLES ====================
 local crosshairActive = false
 local highlightActive = false
 local infoActive = false
 local entityESPActive = false
+local gradientOpen = false
 local settingsOpen = false
 local hue = 0
-local themeIndex = 1
-local isRainbow = false
-local titleClicks = 0
-local lastClickTime = 0
 local minimized = false
 
--- Settings
 local settings = {
-    crosshairSize = 40,
+    crosshairSize = 30,
     crosshairSpeed = 2,
     highlightTransparency = 0.5,
-    entityESPColor = Color3.fromRGB(255, 0, 255),
-    espShowNames = true,
-    espShowDistance = true
+    entityESPColor = Color3.fromRGB(255, 0, 255)
 }
 
-local themes = {
-    {bg = Color3.fromRGB(15, 15, 20), accent = Color3.fromRGB(0, 200, 100), name = "Dark"},
-    {bg = Color3.fromRGB(30, 0, 45), accent = Color3.fromRGB(180, 0, 255), name = "Purple"},
-    {bg = Color3.fromRGB(0, 25, 45), accent = Color3.fromRGB(0, 170, 255), name = "Blue"},
-    {bg = Color3.fromRGB(45, 25, 0), accent = Color3.fromRGB(255, 140, 0), name = "Orange"},
-    {bg = Color3.fromRGB(35, 35, 35), accent = Color3.fromRGB(160, 160, 160), name = "Gray"}
-}
-
--- ==================== CROSSHAIR (FIXED) ====================
+-- ==================== CROSSHAIR (FIXED v5.2) ====================
 local crosshairContainer = Instance.new("Frame")
 crosshairContainer.Size = UDim2.new(0, 200, 0, 200)
 crosshairContainer.Position = UDim2.new(0.5, -100, 0.5, -100)
@@ -222,7 +204,7 @@ crosshairContainer.Parent = screenGui
 local crosshairLines = {}
 for i = 1, 4 do
     local line = Instance.new("Frame")
-    line.Size = UDim2.new(0, 3, 0, 30)
+    line.Size = UDim2.new(0, 2, 0, 20)
     line.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     line.BorderSizePixel = 0
     line.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -231,14 +213,14 @@ for i = 1, 4 do
 end
 
 local centerDot = Instance.new("Frame")
-centerDot.Size = UDim2.new(0, 5, 0, 5)
-centerDot.Position = UDim2.new(0.5, -2.5, 0.5, -2.5)
+centerDot.Size = UDim2.new(0, 4, 0, 4)
+centerDot.Position = UDim2.new(0.5, -2, 0.5, -2)
 centerDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 centerDot.BorderSizePixel = 0
 centerDot.Parent = crosshairContainer
 
 local dotCorner = Instance.new("UICorner")
-dotCorner.CornerRadius = UDim.new(0, 3)
+dotCorner.CornerRadius = UDim.new(0, 2)
 dotCorner.Parent = centerDot
 
 -- ==================== PLAYER HIGHLIGHT ====================
@@ -251,7 +233,7 @@ local function addHighlight(character)
     hl.Parent = character
 end
 
--- ==================== NPC ESP (FIXED) ====================
+-- ==================== NPC ESP ====================
 local entityHighlights = {}
 
 local function createEntityESP()
@@ -302,8 +284,8 @@ end
 
 -- ==================== INFO PANEL ====================
 local infoFrame = Instance.new("Frame")
-infoFrame.Size = UDim2.new(0, 170, 0, 60)
-infoFrame.Position = UDim2.new(0.5, -85, 0, 10)
+infoFrame.Size = UDim2.new(0, 140, 0, 50)
+infoFrame.Position = UDim2.new(0.5, -70, 0, 10)
 infoFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 infoFrame.BorderSizePixel = 0
 infoFrame.Visible = false
@@ -312,16 +294,24 @@ infoFrame.Draggable = true
 infoFrame.Parent = screenGui
 
 local infoCorner = Instance.new("UICorner")
-infoCorner.CornerRadius = UDim.new(0, 12)
+infoCorner.CornerRadius = UDim.new(0, 10)
 infoCorner.Parent = infoFrame
 
 local infoStroke = Instance.new("UIStroke")
-infoStroke.Thickness = 3
+infoStroke.Thickness = 2
 infoStroke.Color = Color3.fromRGB(255, 0, 0)
 infoStroke.Parent = infoFrame
 
 local infoStrokeGradient = Instance.new("UIGradient")
-infoStrokeGradient.Color = mainStrokeGradient.Color
+infoStrokeGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, gradient2Colors[1]),
+    ColorSequenceKeypoint.new(0.16, gradient2Colors[2]),
+    ColorSequenceKeypoint.new(0.33, gradient2Colors[3]),
+    ColorSequenceKeypoint.new(0.5, gradient2Colors[4]),
+    ColorSequenceKeypoint.new(0.66, gradient2Colors[5]),
+    ColorSequenceKeypoint.new(0.83, gradient2Colors[6]),
+    ColorSequenceKeypoint.new(1, gradient2Colors[7])
+}
 infoStrokeGradient.Parent = infoStroke
 
 local infoLabel = Instance.new("TextLabel")
@@ -330,16 +320,128 @@ infoLabel.Position = UDim2.new(0, 5, 0, 5)
 infoLabel.BackgroundTransparency = 1
 infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 infoLabel.Font = Enum.Font.Gotham
-infoLabel.TextSize = 13
+infoLabel.TextSize = 11
 infoLabel.TextXAlignment = Enum.TextXAlignment.Left
 infoLabel.TextYAlignment = Enum.TextYAlignment.Top
 infoLabel.Text = "FPS: 0\nPing: 0"
 infoLabel.Parent = infoFrame
 
+-- ==================== GRADIENT SETTINGS WINDOW ====================
+local gradientFrame = Instance.new("Frame")
+gradientFrame.Size = UDim2.new(0, 260, 0, 220)
+gradientFrame.Position = UDim2.new(0.5, -130, 0.5, -110)
+gradientFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+gradientFrame.BorderSizePixel = 0
+gradientFrame.Visible = false
+gradientFrame.Active = true
+gradientFrame.Draggable = true
+gradientFrame.Parent = screenGui
+
+local gradientCorner = Instance.new("UICorner")
+gradientCorner.CornerRadius = UDim.new(0, 12)
+gradientCorner.Parent = gradientFrame
+
+local gradientStroke = Instance.new("UIStroke")
+gradientStroke.Thickness = 2
+gradientStroke.Color = Color3.fromRGB(255, 0, 0)
+gradientStroke.Parent = gradientFrame
+
+local gradientStrokeGradient = Instance.new("UIGradient")
+gradientStrokeGradient.Color = mainStrokeGradient.Color
+gradientStrokeGradient.Parent = gradientStroke
+
+local gradientTitle = Instance.new("TextLabel")
+gradientTitle.Size = UDim2.new(1, 0, 0, 30)
+gradientTitle.BackgroundTransparency = 1
+gradientTitle.Text = "🎨 Gradient Settings"
+gradientTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+gradientTitle.Font = Enum.Font.GothamBold
+gradientTitle.TextSize = 15
+gradientTitle.Parent = gradientFrame
+
+-- Gradient 1
+local grad1Label = Instance.new("TextLabel")
+grad1Label.Size = UDim2.new(1, 0, 0, 20)
+grad1Label.Position = UDim2.new(0, 0, 0, 30)
+grad1Label.BackgroundTransparency = 1
+grad1Label.Text = "Gradient 1 (Main)"
+grad1Label.TextColor3 = Color3.fromRGB(200, 200, 200)
+grad1Label.Font = Enum.Font.Gotham
+grad1Label.TextSize = 12
+grad1Label.Parent = gradientFrame
+
+local grad1Buttons = {}
+for i = 1, 7 do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 25, 0, 25)
+    btn.Position = UDim2.new(0, 15 + (i - 1) * 30, 0, 52)
+    btn.BackgroundColor3 = rainbowColors[i]
+    btn.Text = ""
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+    btn.Parent = gradientFrame
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 5)
+    btnCorner.Parent = btn
+    
+    grad1Buttons[i] = btn
+end
+
+-- Gradient 2
+local grad2Label = Instance.new("TextLabel")
+grad2Label.Size = UDim2.new(1, 0, 0, 20)
+grad2Label.Position = UDim2.new(0, 0, 0, 85)
+grad2Label.BackgroundTransparency = 1
+grad2Label.Text = "Gradient 2 (Info)"
+grad2Label.TextColor3 = Color3.fromRGB(200, 200, 200)
+grad2Label.Font = Enum.Font.Gotham
+grad2Label.TextSize = 12
+grad2Label.Parent = gradientFrame
+
+local grad2Buttons = {}
+for i = 1, 7 do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 25, 0, 25)
+    btn.Position = UDim2.new(0, 15 + (i - 1) * 30, 0, 107)
+    btn.BackgroundColor3 = rainbowColors[i]
+    btn.Text = ""
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+    btn.Parent = gradientFrame
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 5)
+    btnCorner.Parent = btn
+    
+    grad2Buttons[i] = btn
+end
+
+-- Close Button
+local closeGradientBtn = Instance.new("TextButton")
+closeGradientBtn.Size = UDim2.new(0, 180, 0, 28)
+closeGradientBtn.Position = UDim2.new(0, 40, 0, 145)
+closeGradientBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeGradientBtn.Text = "Close"
+closeGradientBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeGradientBtn.Font = Enum.Font.GothamBold
+closeGradientBtn.TextSize = 13
+closeGradientBtn.AutoButtonColor = false
+closeGradientBtn.Parent = gradientFrame
+
+local closeGradientCorner = Instance.new("UICorner")
+closeGradientCorner.CornerRadius = UDim.new(0, 6)
+closeGradientCorner.Parent = closeGradientBtn
+
+closeGradientBtn.MouseButton1Click:Connect(function()
+    gradientFrame.Visible = false
+    gradientOpen = false
+end)
+
 -- ==================== SETTINGS WINDOW ====================
 local settingsFrame = Instance.new("Frame")
-settingsFrame.Size = UDim2.new(0, 240, 0, 320)
-settingsFrame.Position = UDim2.new(0.5, -120, 0.5, -160)
+settingsFrame.Size = UDim2.new(0, 200, 0, 120)
+settingsFrame.Position = UDim2.new(0.5, -100, 0.5, -60)
 settingsFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 settingsFrame.BorderSizePixel = 0
 settingsFrame.Visible = false
@@ -348,11 +450,11 @@ settingsFrame.Draggable = true
 settingsFrame.Parent = screenGui
 
 local settingsCorner = Instance.new("UICorner")
-settingsCorner.CornerRadius = UDim.new(0, 14)
+settingsCorner.CornerRadius = UDim.new(0, 12)
 settingsCorner.Parent = settingsFrame
 
 local settingsStroke = Instance.new("UIStroke")
-settingsStroke.Thickness = 3
+settingsStroke.Thickness = 2
 settingsStroke.Color = Color3.fromRGB(255, 0, 0)
 settingsStroke.Parent = settingsFrame
 
@@ -361,74 +463,33 @@ settingsStrokeGradient.Color = mainStrokeGradient.Color
 settingsStrokeGradient.Parent = settingsStroke
 
 local settingsTitle = Instance.new("TextLabel")
-settingsTitle.Size = UDim2.new(1, 0, 0, 35)
+settingsTitle.Size = UDim2.new(1, 0, 0, 30)
 settingsTitle.BackgroundTransparency = 1
 settingsTitle.Text = "⚙️ Settings"
 settingsTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 settingsTitle.Font = Enum.Font.GothamBold
-settingsTitle.TextSize = 17
+settingsTitle.TextSize = 15
 settingsTitle.Parent = settingsFrame
 
--- ==================== THEME WINDOW ====================
-local themeFrame = Instance.new("Frame")
-themeFrame.Size = UDim2.new(0, 220, 0, 200)
-themeFrame.Position = UDim2.new(0.5, -110, 0.5, -100)
-themeFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-themeFrame.BorderSizePixel = 0
-themeFrame.Visible = false
-themeFrame.Active = true
-themeFrame.Draggable = true
-themeFrame.Parent = screenGui
-
-local themeCorner2 = Instance.new("UICorner")
-themeCorner2.CornerRadius = UDim.new(0, 14)
-themeCorner2.Parent = themeFrame
-
-local themeStroke = Instance.new("UIStroke")
-themeStroke.Thickness = 3
-themeStroke.Color = Color3.fromRGB(255, 0, 0)
-themeStroke.Parent = themeFrame
-
-local themeStrokeGradient = Instance.new("UIGradient")
-themeStrokeGradient.Color = mainStrokeGradient.Color
-themeStrokeGradient.Parent = themeStroke
-
-local themeTitle = Instance.new("TextLabel")
-themeTitle.Size = UDim2.new(1, 0, 0, 35)
-themeTitle.BackgroundTransparency = 1
-themeTitle.Text = "🎨 Theme"
-themeTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-themeTitle.Font = Enum.Font.GothamBold
-themeTitle.TextSize = 17
-themeTitle.Parent = themeFrame
-
-local themeButtons = {}
-for i, t in ipairs(themes) do
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 180, 0, 28)
-    btn.Position = UDim2.new(0, 20, 0, 40 + (i - 1) * 32)
-    btn.BackgroundColor3 = t.bg
-    btn.Text = t.name
-    btn.TextColor3 = t.accent
-    btn.Font = Enum.Font.Gotham
-    btn.TextSize = 14
-    btn.AutoButtonColor = false
-    btn.Parent = themeFrame
-    
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 8)
-    btnCorner.Parent = btn
-    
-    themeButtons[i] = btn
-end
+local settingsLabel = Instance.new("TextLabel")
+settingsLabel.Size = UDim2.new(1, -20, 1, -40)
+settingsLabel.Position = UDim2.new(0, 10, 0, 35)
+settingsLabel.BackgroundTransparency = 1
+settingsLabel.Text = "Crosshair Size: " .. settings.crosshairSize .. "\nCrosshair Speed: " .. settings.crosshairSpeed .. "\nHighlight: " .. settings.highlightTransparency
+settingsLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+settingsLabel.Font = Enum.Font.Gotham
+settingsLabel.TextSize = 12
+settingsLabel.TextXAlignment = Enum.TextXAlignment.Left
+settingsLabel.TextYAlignment = Enum.TextYAlignment.Top
+settingsLabel.Parent = settingsFrame
 
 -- ==================== MAIN LOOP ====================
 RunService.RenderStepped:Connect(function(dt)
-    local success, err = pcall(function()
+    pcall(function()
         hue = (hue + dt * 0.5) % 1
         local color = Color3.fromHSV(hue, 1, 1)
         
-        -- Crosshair
+        -- Crosshair (FIXED)
         if crosshairActive then
             crosshairContainer.Visible = true
             local angle = tick() * settings.crosshairSpeed
@@ -450,7 +511,7 @@ RunService.RenderStepped:Connect(function(dt)
             centerDot.Visible = false
         end
         
-        -- Player Highlight
+        -- Highlight
         if highlightActive then
             for _, player in ipairs(Players:GetPlayers()) do
                 if player ~= LocalPlayer and player.Character then
@@ -488,27 +549,9 @@ RunService.RenderStepped:Connect(function(dt)
                 ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
             end)
             
-            local fpsColor = Color3.fromRGB(0, 255, 0)
-            if fps < 30 then fpsColor = Color3.fromRGB(255, 0, 0)
-            elseif fps < 60 then fpsColor = Color3.fromRGB(255, 255, 0) end
-            
-            local pingColor = Color3.fromRGB(0, 255, 0)
-            if ping > 200 then pingColor = Color3.fromRGB(255, 0, 0)
-            elseif ping > 100 then pingColor = Color3.fromRGB(255, 255, 0) end
-            
-            infoLabel.Text = string.format(
-                '<font color="rgb(%d,%d,%d)">FPS: %d</font>\n<font color="rgb(%d,%d,%d)">Ping: %d ms</font>',
-                fpsColor.R * 255, fpsColor.G * 255, fpsColor.B * 255, fps,
-                pingColor.R * 255, pingColor.G * 255, pingColor.B * 255, ping
-            )
+            infoLabel.Text = string.format("FPS: %d\nPing: %d ms", fps, ping)
         else
             infoFrame.Visible = false
-        end
-        
-        -- Rainbow Mode
-        if isRainbow then
-            mainFrame.BackgroundColor3 = color
-            title.TextColor3 = Color3.fromHSV((hue + 0.5) % 1, 1, 1)
         end
     end)
 end)
@@ -516,22 +559,27 @@ end)
 -- ==================== BUTTON HANDLERS ====================
 rainbowCrosshair.MouseButton1Click:Connect(function()
     crosshairActive = not crosshairActive
-    rainbowCrosshair.BackgroundColor3 = crosshairActive and themes[themeIndex].accent or Color3.fromRGB(40, 40, 50)
+    rainbowCrosshair.BackgroundColor3 = crosshairActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
 end)
 
 rainbowHighlight.MouseButton1Click:Connect(function()
     highlightActive = not highlightActive
-    rainbowHighlight.BackgroundColor3 = highlightActive and themes[themeIndex].accent or Color3.fromRGB(40, 40, 50)
+    rainbowHighlight.BackgroundColor3 = highlightActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
 end)
 
 infoPanel.MouseButton1Click:Connect(function()
     infoActive = not infoActive
-    infoPanel.BackgroundColor3 = infoActive and themes[themeIndex].accent or Color3.fromRGB(40, 40, 50)
+    infoPanel.BackgroundColor3 = infoActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
 end)
 
 entityESP.MouseButton1Click:Connect(function()
     entityESPActive = not entityESPActive
-    entityESP.BackgroundColor3 = entityESPActive and themes[themeIndex].accent or Color3.fromRGB(40, 40, 50)
+    entityESP.BackgroundColor3 = entityESPActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(40, 40, 50)
+end)
+
+gradientBtn.MouseButton1Click:Connect(function()
+    gradientOpen = not gradientOpen
+    gradientFrame.Visible = gradientOpen
 end)
 
 settingsBtn.MouseButton1Click:Connect(function()
@@ -539,67 +587,81 @@ settingsBtn.MouseButton1Click:Connect(function()
     settingsFrame.Visible = settingsOpen
 end)
 
+-- ==================== GRADIENT HANDLERS ====================
+for i, btn in ipairs(grad1Buttons) do
+    btn.MouseButton1Click:Connect(function()
+        gradient1Colors[i] = rainbowColors[i]
+        mainGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, gradient1Colors[1]),
+            ColorSequenceKeypoint.new(0.16, gradient1Colors[2]),
+            ColorSequenceKeypoint.new(0.33, gradient1Colors[3]),
+            ColorSequenceKeypoint.new(0.5, gradient1Colors[4]),
+            ColorSequenceKeypoint.new(0.66, gradient1Colors[5]),
+            ColorSequenceKeypoint.new(0.83, gradient1Colors[6]),
+            ColorSequenceKeypoint.new(1, gradient1Colors[7])
+        }
+        mainStrokeGradient.Color = mainGradient.Color
+    end)
+end
+
+for i, btn in ipairs(grad2Buttons) do
+    btn.MouseButton1Click:Connect(function()
+        gradient2Colors[i] = rainbowColors[i]
+        infoStrokeGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, gradient2Colors[1]),
+            ColorSequenceKeypoint.new(0.16, gradient2Colors[2]),
+            ColorSequenceKeypoint.new(0.33, gradient2Colors[3]),
+            ColorSequenceKeypoint.new(0.5, gradient2Colors[4]),
+            ColorSequenceKeypoint.new(0.66, gradient2Colors[5]),
+            ColorSequenceKeypoint.new(0.83, gradient2Colors[6]),
+            ColorSequenceKeypoint.new(1, gradient2Colors[7])
+        }
+    end)
+end
+
 -- ==================== MINIMIZE ====================
 minimizeBtn.MouseButton1Click:Connect(function()
     minimized = not minimized
     if minimized then
-        rainbowCrosshair.Visible = false
-        rainbowHighlight.Visible = false
-        infoPanel.Visible = false
-        entityESP.Visible = false
-        settingsBtn.Visible = false
-        mainFrame.Size = UDim2.new(0, 260, 0, 50)
+        scrollFrame.Visible = false
+        mainFrame.Size = UDim2.new(0, 200, 0, 40)
     else
-        rainbowCrosshair.Visible = true
-        rainbowHighlight.Visible = true
-        infoPanel.Visible = true
-        entityESP.Visible = true
-        settingsBtn.Visible = true
-        mainFrame.Size = UDim2.new(0, 260, 0, 400)
+        scrollFrame.Visible = true
+        mainFrame.Size = UDim2.new(0, 200, 0, 280)
     end
 end)
 
--- ==================== THEME BUTTON ====================
+-- ==================== THEME ====================
 themeBtn.MouseButton1Click:Connect(function()
-    themeFrame.Visible = not themeFrame.Visible
-end)
-
-for i, btn in ipairs(themeButtons) do
-    btn.MouseButton1Click:Connect(function()
-        themeIndex = i
-        local t = themes[i]
-        mainFrame.BackgroundColor3 = t.bg
-        infoFrame.BackgroundColor3 = t.bg
-        settingsFrame.BackgroundColor3 = t.bg
-        themeFrame.BackgroundColor3 = t.bg
-        
-        themeFrame.Visible = false
-    end)
-end
-
--- ==================== SECRET CODE ====================
-title.MouseButton1Click:Connect(function()
-    local currentTime = tick()
-    if currentTime - lastClickTime > 1 then
-        titleClicks = 0
+    -- Просто меняем градиент случайно
+    for i = 1, 7 do
+        gradient1Colors[i] = rainbowColors[math.random(1, 7)]
+        gradient2Colors[i] = rainbowColors[math.random(1, 7)]
     end
-    lastClickTime = currentTime
-    titleClicks = titleClicks + 1
     
-    if titleClicks >= 3 then
-        isRainbow = not isRainbow
-        titleClicks = 0
-        
-        if not isRainbow then
-            mainFrame.BackgroundColor3 = themes[themeIndex].bg
-            title.TextColor3 = Color3.fromRGB(255, 255, 255)
-        end
-    end
+    mainGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, gradient1Colors[1]),
+        ColorSequenceKeypoint.new(0.16, gradient1Colors[2]),
+        ColorSequenceKeypoint.new(0.33, gradient1Colors[3]),
+        ColorSequenceKeypoint.new(0.5, gradient1Colors[4]),
+        ColorSequenceKeypoint.new(0.66, gradient1Colors[5]),
+        ColorSequenceKeypoint.new(0.83, gradient1Colors[6]),
+        ColorSequenceKeypoint.new(1, gradient1Colors[7])
+    }
+    
+    infoStrokeGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, gradient2Colors[1]),
+        ColorSequenceKeypoint.new(0.16, gradient2Colors[2]),
+        ColorSequenceKeypoint.new(0.33, gradient2Colors[3]),
+        ColorSequenceKeypoint.new(0.5, gradient2Colors[4]),
+        ColorSequenceKeypoint.new(0.66, gradient2Colors[5]),
+        ColorSequenceKeypoint.new(0.83, gradient2Colors[6]),
+        ColorSequenceKeypoint.new(1, gradient2Colors[7])
+    }
 end)
 
 -- ==================== NOTIFICATION ====================
-print("✅ Visual Hub v5.0 loaded!")
-print("🎨 Author: Timur Bodyak")
-print("👾 NPC ESP: active")
-print("⚙️ Settings: available")
-print("🌈 Rainbow edges: enabled")
+print("✅ Visual Hub v5.2 loaded!")
+print("🎯 Crosshair: FIXED")
+print("📜 Scrolling: ENABLED")
+print("🎨 Gradients: 2 x 7 colors")
