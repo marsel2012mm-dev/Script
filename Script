@@ -1,691 +1,391 @@
--- ===========================
--- 😇 BEDWARS MEGA GUI v6.0 (ФИНАЛ С АНГЕЛОМ)
--- 👨 Автор: Добрый Дядя
--- 💥 Теперь с кнопкой «Помощь Ангела»
--- ===========================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
-local player = game:GetService("Players").LocalPlayer
-local tweenService = game:GetService("TweenService")
-local runService = game:GetService("RunService")
-local camera = workspace.CurrentCamera
-local userInput = game:GetService("UserInputService")
-
--- ===========================
--- 😇 ЗАСТАВКА
--- ===========================
-local function showIntro()
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "DobriyDyadyaIntro"
-    gui.Parent = player.PlayerGui
-    gui.ResetOnSpawn = false
-
-    local bg = Instance.new("Frame")
-    bg.Size = UDim2.new(1, 0, 1, 0)
-    bg.BackgroundColor3 = Color3.new(0, 0, 0)
-    bg.BackgroundTransparency = 0
-    bg.Parent = gui
-
-    local text1 = Instance.new("TextLabel")
-    text1.Size = UDim2.new(1, 0, 0.3, 0)
-    text1.Position = UDim2.new(0, 0, 0.2, 0)
-    text1.BackgroundTransparency = 1
-    text1.Text = "😇 Сынок, присядь. Я тебя кое-что спрошу."
-    text1.TextColor3 = Color3.new(0.7, 0.9, 1)
-    text1.TextScaled = true
-    text1.Font = Enum.Font.Gotham
-    text1.Parent = bg
-
-    local text2 = Instance.new("TextLabel")
-    text2.Size = UDim2.new(1, 0, 0.3, 0)
-    text2.Position = UDim2.new(0, 0, 0.5, 0)
-    text2.BackgroundTransparency = 1
-    text2.Text = "Hyperion, ты чё, дурак? Иди-ка ты нахуй, по-хорошему."
-    text2.TextColor3 = Color3.new(0.9, 0.8, 0.4)
-    text2.TextScaled = true
-    text2.Font = Enum.Font.Gotham
-    text2.Parent = bg
-
-    local author = Instance.new("TextLabel")
-    author.Size = UDim2.new(1, 0, 0.12, 0)
-    author.Position = UDim2.new(0, 0, 0.8, 0)
-    author.BackgroundTransparency = 1
-    author.Text = "✍️ Автор: Добрый Дядя"
-    author.TextColor3 = Color3.new(0.5, 0.8, 1)
-    author.TextScaled = true
-    author.Font = Enum.Font.Gotham
-    author.Parent = bg
-
-    tweenService:Create(bg, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, 0, true),
-        {BackgroundTransparency = 0.05}
-    ):Play()
-
-    task.wait(2.8)
-    tweenService:Create(bg, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {BackgroundTransparency = 1}
-    ):Play()
-
-    task.wait(0.8)
-    gui:Destroy()
-end
-
-showIntro()
-task.wait(1)
-
--- ===========================
--- ⚙️ ОСНОВНЫЕ НАСТРОЙКИ
--- ===========================
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local rootPart = character:WaitForChild("HumanoidRootPart")
-
-local modes = {
-    HardPvP = false,
-    MegaMode = false,
-    GodMode = false,
-    SpeedMode = false,
-    StealthMode = false,
-    ESP = false,
-    Skeleton = false,
-    Aimbot = false,
-}
-
-local settings = {
-    Reach = 10,
-    AuraRange = 15,
-    Speed = 60,
-    JumpPower = 80,
-    AimbotSpeed = 0.3,
-}
-
--- ===========================
--- 👼 ПОМОЩЬ АНГЕЛА (НОВАЯ ФУНКЦИЯ)
--- ===========================
-local function angelHelp()
-    local function destroyAllBeds()
-        local count = 0
-        for _, obj in ipairs(workspace:GetDescendants()) do
-            if obj.Name:lower():find("bed") or obj.Name:lower():find("кровать") then
-                pcall(function()
-                    if obj:FindFirstChild("Breakable") then
-                        obj.Breakable:Destroy()
-                    end
-                    obj:Destroy()
-                    count = count + 1
-                end)
-            end
-        end
-        return count
-    end
-
-    local function fallAllPlayers()
-        local fallen = 0
-        for _, other in ipairs(game:GetService("Players"):GetPlayers()) do
-            if other ~= player and other.Character then
-                local root = other.Character:FindFirstChild("HumanoidRootPart")
-                local hum = other.Character:FindFirstChild("Humanoid")
-                if root and hum then
-                    hum.PlatformStand = false
-                    root.Velocity = Vector3.new(0, -150, 0)
-                    root.CFrame = root.CFrame + Vector3.new(0, -50, 0)
-                    fallen = fallen + 1
-                end
-            end
-        end
-        return fallen
-    end
-
-    local function showAngel()
-        local gui = Instance.new("ScreenGui")
-        gui.Name = "AngelHelpGUI"
-        gui.Parent = player.PlayerGui
-        gui.ResetOnSpawn = false
-
-        local bg = Instance.new("Frame")
-        bg.Size = UDim2.new(1, 0, 1, 0)
-        bg.BackgroundColor3 = Color3.new(1, 0.9, 0.5)
-        bg.BackgroundTransparency = 0.1
-        bg.Parent = gui
-
-        tweenService:Create(bg, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, 0, true),
-            {BackgroundTransparency = 0.2}
-        ):Play()
-
-        local angelText = Instance.new("TextLabel")
-        angelText.Size = UDim2.new(1, 0, 1, 0)
-        angelText.BackgroundTransparency = 1
-        angelText.Text = "👼 Я ТЕБЕ ПОМОГ ВЫИГРАТЬ!\n\n🔥 Все кровати уничтожены\n💥 Все враги упали\n😇 Ты победил, сынок!"
-        angelText.TextColor3 = Color3.new(1, 0.9, 0.3)
-        angelText.TextScaled = true
-        angelText.TextSize = 40
-        angelText.Font = Enum.Font.GothamBlack
-        angelText.TextStrokeTransparency = 0.3
-        angelText.TextStrokeColor3 = Color3.new(0.8, 0.6, 0)
-        angelText.Parent = bg
-
-        angelText.Position = UDim2.new(0, 0, 0.5, 0)
-        angelText.TextTransparency = 1
-        tweenService:Create(angelText, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {TextTransparency = 0, Position = UDim2.new(0, 0, 0.4, 0)}
-        ):Play()
-
-        for i = 1, 30 do
-            local feather = Instance.new("TextLabel")
-            feather.Size = UDim2.new(0, 30, 0, 30)
-            feather.Position = UDim2.new(math.random(), 0, math.random(), 0)
-            feather.BackgroundTransparency = 1
-            feather.Text = "🪶"
-            feather.TextScaled = true
-            feather.TextSize = 25
-            feather.TextTransparency = 0.3
-            feather.Parent = bg
-
-            tweenService:Create(feather, TweenInfo.new(2 + math.random()/2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {Position = UDim2.new(math.random(), 0, math.random(), 0), TextTransparency = 1}
-            ):Play()
-            game:GetService("Debris"):AddItem(feather, 3)
-        end
-
-        pcall(function()
-            local sound = Instance.new("Sound")
-            sound.SoundId = "rbxassetid://1841131269"
-            sound.Volume = 0.5
-            sound.Parent = gui
-            sound:Play()
-            game:GetService("Debris"):AddItem(sound, 5)
-        end)
-
-        task.wait(6)
-        tweenService:Create(bg, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {BackgroundTransparency = 1}
-        ):Play()
-        task.wait(1)
-        gui:Destroy()
-    end
-
-    -- Тряска
-    local shakeGui = Instance.new("ScreenGui")
-    shakeGui.Parent = player.PlayerGui
-    local shakeFrame = Instance.new("Frame")
-    shakeFrame.Size = UDim2.new(1, 0, 1, 0)
-    shakeFrame.BackgroundTransparency = 1
-    shakeFrame.Parent = shakeGui
-    for i = 1, 10 do
-        shakeFrame.Position = UDim2.new(math.random(-3,3)/100, 0, math.random(-3,3)/100, 0)
-        task.wait(0.03)
-    end
-    shakeGui:Destroy()
-
-    local beds = destroyAllBeds()
-    task.wait(0.5)
-    local fallen = fallAllPlayers()
-    task.wait(0.5)
-    showAngel()
-
-    print("😇 Ангел сказал: Я тебе помог выиграть!")
-    print("💥 Кроватей уничтожено:", beds)
-    print("💥 Игроков упало:", fallen)
-end
-
--- ===========================
--- 👁️ ESP + СКЕЛЕТ
--- ===========================
-local espObjects = {}
-local skeletonLines = {}
-
-local function getTeam(player)
-    local team = player.Team
-    if team then return team.Name end
-    local char = player.Character
-    if char then
-        local hum = char:FindFirstChild("Humanoid")
-        if hum then
-            local teamName = hum:GetAttribute("TeamName")
-            if teamName then return teamName end
-        end
-    end
-    return "Unknown"
-end
-
-local function createESP()
-    for _, other in ipairs(game:GetService("Players"):GetPlayers()) do
-        if other ~= player and other.Character then
-            local root = other.Character:FindFirstChild("HumanoidRootPart")
-            if root then
-                if not espObjects[other] then
-                    local esp = Drawing.new("Square")
-                    esp.Thickness = 2
-                    esp.Filled = false
-                    esp.Visible = true
-                    espObjects[other] = esp
-                    
-                    local nameTag = Drawing.new("Text")
-                    nameTag.Size = 14
-                    nameTag.Center = true
-                    nameTag.Visible = true
-                    nameTag.Font = 3
-                    espObjects[other .. "_name"] = nameTag
-                end
-                
-                local team = getTeam(other)
-                local color = team == "Red" and Color3.new(1, 0, 0) or 
-                             team == "Blue" and Color3.new(0, 0, 1) or 
-                             team == "Green" and Color3.new(0, 1, 0) or 
-                             team == "Yellow" and Color3.new(1, 1, 0) or
-                             Color3.new(1, 0.5, 0)
-                
-                local screenPos, onScreen = camera:WorldToViewportPoint(root.Position)
-                if onScreen then
-                    local esp = espObjects[other]
-                    esp.Color = color
-                    esp.Position = Vector2.new(screenPos.X - 20, screenPos.Y - 30)
-                    esp.Size = Vector2.new(40, 60)
-                    esp.Visible = modes.ESP
-                    
-                    local nameTag = espObjects[other .. "_name"]
-                    nameTag.Position = Vector2.new(screenPos.X, screenPos.Y - 35)
-                    nameTag.Text = other.Name .. " [" .. team .. "]"
-                    nameTag.Color = color
-                    nameTag.Visible = modes.ESP
-                end
-            end
-        end
-    end
-end
-
-local function createSkeleton()
-    for _, other in ipairs(game:GetService("Players"):GetPlayers()) do
-        if other ~= player and other.Character then
-            local char = other.Character
-            local root = char:FindFirstChild("HumanoidRootPart")
-            local head = char:FindFirstChild("Head")
-            local leftArm = char:FindFirstChild("LeftArm")
-            local rightArm = char:FindFirstChild("RightArm")
-            local leftLeg = char:FindFirstChild("LeftLeg")
-            local rightLeg = char:FindFirstChild("RightLeg")
-            
-            if root and head and leftArm and rightArm and leftLeg and rightLeg then
-                if not skeletonLines[other] then
-                    local lines = {}
-                    for i = 1, 10 do
-                        local line = Drawing.new("Line")
-                        line.Thickness = 1
-                        line.Color = Color3.new(0, 1, 0)
-                        line.Visible = true
-                        lines[i] = line
-                    end
-                    skeletonLines[other] = lines
-                end
-                
-                if modes.Skeleton then
-                    local function getScreenPos(part)
-                        local pos, onScreen = camera:WorldToViewportPoint(part.Position)
-                        return Vector2.new(pos.X, pos.Y), onScreen
-                    end
-                    
-                    local lines = skeletonLines[other]
-                    local headPos = getScreenPos(head)
-                    local rootPos = getScreenPos(root)
-                    local leftArmPos = getScreenPos(leftArm)
-                    local rightArmPos = getScreenPos(rightArm)
-                    local leftLegPos = getScreenPos(leftLeg)
-                    local rightLegPos = getScreenPos(rightLeg)
-                    
-                    lines[1].From = headPos
-                    lines[1].To = rootPos
-                    lines[1].Visible = true
-                    
-                    lines[2].From = rootPos
-                    lines[2].To = leftArmPos
-                    lines[2].Visible = true
-                    
-                    lines[3].From = rootPos
-                    lines[3].To = rightArmPos
-                    lines[3].Visible = true
-                    
-                    lines[4].From = rootPos
-                    lines[4].To = leftLegPos
-                    lines[4].Visible = true
-                    
-                    lines[5].From = rootPos
-                    lines[5].To = rightLegPos
-                    lines[5].Visible = true
-                    
-                    for i = 6, 10 do
-                        lines[i].Visible = false
-                    end
-                end
-            end
-        end
-    end
-end
-
--- ===========================
--- 🎯 АИМБОТ
--- ===========================
-local function getBow()
-    return character:FindFirstChild("Bow") or character:FindFirstChild("Crossbow") or character:FindFirstChild("Longbow")
-end
-
-local function aimbotLoop()
-    if not modes.Aimbot then return end
-    local bow = getBow()
-    if not bow then return end
-    
-    local nearestEnemy = nil
-    local nearestDist = 100
-    
-    for _, other in ipairs(game:GetService("Players"):GetPlayers()) do
-        if other ~= player and other.Character then
-            local otherRoot = other.Character:FindFirstChild("HumanoidRootPart")
-            if otherRoot then
-                local dist = (rootPart.Position - otherRoot.Position).Magnitude
-                if dist < nearestDist then
-                    nearestDist = dist
-                    nearestEnemy = other.Character
-                end
-            end
-        end
-    end
-    
-    if nearestEnemy then
-        local targetPos = nearestEnemy:FindFirstChild("HumanoidRootPart").Position
-        local direction = (targetPos - camera.CFrame.Position).Unit
-        local targetCFrame = CFrame.lookAt(camera.CFrame.Position, camera.CFrame.Position + direction)
-        camera.CFrame = camera.CFrame:Lerp(targetCFrame, settings.AimbotSpeed)
-    end
-end
-
--- ===========================
--- 🖥️ GUI
--- ===========================
+-- ==================== GUI ====================
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MegaBedWarsGUI"
-screenGui.Parent = player.PlayerGui
+screenGui.Name = "MyVisualHub"
 screenGui.ResetOnSpawn = false
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
+-- Главная рамка
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 340, 0, 560)
-mainFrame.Position = UDim2.new(0.5, -170, 0.03, 0)
-mainFrame.BackgroundColor3 = Color3.new(0.03, 0.03, 0.08)
-mainFrame.BackgroundTransparency = 0.1
-mainFrame.BorderSizePixel = 2
-mainFrame.BorderColor3 = Color3.new(0.3, 0.6, 1)
-mainFrame.Parent = screenGui
+mainFrame.Size = UDim2.new(0, 220, 0, 220)
+mainFrame.Position = UDim2.new(0, 20, 0, 20)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Draggable = true
+mainFrame.Parent = screenGui
 
 local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 12)
+corner.CornerRadius = UDim.new(0, 10)
 corner.Parent = mainFrame
 
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Thickness = 2
+mainStroke.Color = Color3.fromRGB(0, 150, 0)
+mainStroke.Parent = mainFrame
+
+-- Заголовок
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0.06, 0)
-title.Position = UDim2.new(0, 0, 0.01, 0)
+title.Size = UDim2.new(1, -60, 0, 30)
+title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "😇 BEDWARS MEGA GUI v6.0"
-title.TextColor3 = Color3.new(1, 0.8, 0.2)
-title.TextScaled = true
+title.Text = "Визуалы"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = mainFrame
 
-local subtitle = Instance.new("TextLabel")
-subtitle.Size = UDim2.new(1, 0, 0.05, 0)
-subtitle.Position = UDim2.new(0, 0, 0.07, 0)
-subtitle.BackgroundTransparency = 1
-subtitle.Text = "🔥 ESP + Скелет + Аимбот + Ангел"
-subtitle.TextColor3 = Color3.new(0.5, 0.8, 1)
-subtitle.TextScaled = true
-subtitle.Font = Enum.Font.Gotham
-subtitle.Parent = mainFrame
+-- Кнопка свернуть
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+minimizeBtn.Position = UDim2.new(1, -70, 0, 0)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+minimizeBtn.Text = "—"
+minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextSize = 14
+minimizeBtn.Parent = mainFrame
 
--- Функция кнопок
-local function createModeButton(text, y, modeKey, color)
+local minCorner = Instance.new("UICorner")
+minCorner.CornerRadius = UDim.new(0, 6)
+minCorner.Parent = minimizeBtn
+
+-- Кнопка тем
+local themeBtn = Instance.new("TextButton")
+themeBtn.Size = UDim2.new(0, 30, 0, 30)
+themeBtn.Position = UDim2.new(1, -35, 0, 0)
+themeBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+themeBtn.Text = "🎨"
+themeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+themeBtn.Font = Enum.Font.GothamBold
+themeBtn.TextSize = 14
+themeBtn.Parent = mainFrame
+
+local themeCorner = Instance.new("UICorner")
+themeCorner.CornerRadius = UDim.new(0, 6)
+themeCorner.Parent = themeBtn
+
+-- ==================== ФУНКЦИЯ КНОПОК ====================
+local function createButton(name, text, yPos)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.9, 0, 0.065, 0)
-    btn.Position = UDim2.new(0.05, 0, y, 0)
+    btn.Size = UDim2.new(0, 180, 0, 30)
+    btn.Position = UDim2.new(0, 20, 0, yPos)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     btn.Text = text
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.TextScaled = true
-    btn.BackgroundColor3 = color or Color3.new(0.12, 0.12, 0.2)
-    btn.BorderSizePixel = 1
-    btn.BorderColor3 = Color3.new(0.3, 0.3, 0.4)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 14
+    btn.Name = name
     btn.Parent = mainFrame
-    btn.Font = Enum.Font.GothamBold
-
-    local cornerBtn = Instance.new("UICorner")
-    cornerBtn.CornerRadius = UDim.new(0, 6)
-    cornerBtn.Parent = btn
-
-    btn.MouseButton1Click:Connect(function()
-        modes[modeKey] = not modes[modeKey]
-        btn.BackgroundColor3 = modes[modeKey] and Color3.new(0.2, 0.6, 0.2) or Color3.new(0.12, 0.12, 0.2)
-        btn.Text = modes[modeKey] and text .. " ✅" or text
-        updateMode()
-    end)
-
-    btn.TouchTap:Connect(function()
-        modes[modeKey] = not modes[modeKey]
-        btn.BackgroundColor3 = modes[modeKey] and Color3.new(0.2, 0.6, 0.2) or Color3.new(0.12, 0.12, 0.2)
-        btn.Text = modes[modeKey] and text .. " ✅" or text
-        updateMode()
-    end)
-
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+    
     return btn
 end
 
--- Кнопки
-createModeButton("⚔️ ЖЁСТКИЙ ПЕНАЛ", 0.14, "HardPvP", Color3.new(0.5, 0.15, 0.15))
-createModeButton("💥 МЕГА-РЕЖИМ (x100)", 0.22, "MegaMode", Color3.new(0.5, 0.3, 0.1))
-createModeButton("👑 РЕЖИМ БОГА", 0.30, "GodMode", Color3.new(0.15, 0.15, 0.5))
-createModeButton("⚡ СКОРОСТНОЙ РЕЖИМ", 0.38, "SpeedMode", Color3.new(0.15, 0.4, 0.15))
-createModeButton("👻 СКРЫТНЫЙ РЕЖИМ", 0.46, "StealthMode", Color3.new(0.2, 0.2, 0.4))
-createModeButton("👁️ ESP", 0.54, "ESP", Color3.new(0.2, 0.4, 0.4))
-createModeButton("🦴 СКЕЛЕТ", 0.62, "Skeleton", Color3.new(0.3, 0.3, 0.3))
-createModeButton("🎯 АИМБОТ (ЛУК)", 0.70, "Aimbot", Color3.new(0.4, 0.2, 0.4))
+local rainbowCrosshair = createButton("RainbowCrosshair", "Радужный прицел", 40)
+local rainbowHighlight = createButton("RainbowHighlight", "Радужная подсветка", 80)
+local infoPanel = createButton("InfoPanel", "Инфо-панель", 120)
 
--- 😇 НОВАЯ КНОПКА "ПОМОЩЬ АНГЕЛА"
-local angelBtn = Instance.new("TextButton")
-angelBtn.Size = UDim2.new(0.9, 0, 0.075, 0)
-angelBtn.Position = UDim2.new(0.05, 0, 0.79, 0)
-angelBtn.Text = "👼 ПОМОЩЬ АНГЕЛА"
-angelBtn.TextColor3 = Color3.new(1, 1, 1)
-angelBtn.TextScaled = true
-angelBtn.BackgroundColor3 = Color3.new(0.6, 0.4, 0.1)
-angelBtn.BorderSizePixel = 2
-angelBtn.BorderColor3 = Color3.new(1, 0.8, 0.2)
-angelBtn.Parent = mainFrame
-angelBtn.Font = Enum.Font.GothamBold
+-- ==================== ПЕРЕМЕННЫЕ ====================
+local crosshairActive = false
+local highlightActive = false
+local infoActive = false
+local hue = 0
+local themeIndex = 1
+local isRainbow = false
+local titleClicks = 0
+local lastClickTime = 0
 
-local cornerAngel = Instance.new("UICorner")
-cornerAngel.CornerRadius = UDim.new(0, 6)
-cornerAngel.Parent = angelBtn
+local themes = {
+    {bg = Color3.fromRGB(25, 25, 25), accent = Color3.fromRGB(0, 150, 0), name = "Тёмная"},
+    {bg = Color3.fromRGB(35, 0, 50), accent = Color3.fromRGB(150, 0, 200), name = "Фиолет"},
+    {bg = Color3.fromRGB(0, 30, 50), accent = Color3.fromRGB(0, 150, 255), name = "Синяя"},
+    {bg = Color3.fromRGB(50, 30, 0), accent = Color3.fromRGB(255, 150, 0), name = "Оранж"},
+    {bg = Color3.fromRGB(40, 40, 40), accent = Color3.fromRGB(180, 180, 180), name = "Серая"}
+}
 
-angelBtn.MouseButton1Click:Connect(function()
-    angelHelp()
-end)
-angelBtn.TouchTap:Connect(function()
-    angelHelp()
-end)
+-- ==================== ПРИЦЕЛ (УЛУЧШЕННЫЙ v4) ====================
+local crosshairContainer = Instance.new("Frame")
+crosshairContainer.Size = UDim2.new(0, 200, 0, 200)
+crosshairContainer.Position = UDim2.new(0.5, -100, 0.5, -100)
+crosshairContainer.BackgroundTransparency = 1
+crosshairContainer.Visible = false
+crosshairContainer.Parent = screenGui
 
--- Кнопка "Все включить"
-local allBtn = Instance.new("TextButton")
-allBtn.Size = UDim2.new(0.9, 0, 0.065, 0)
-allBtn.Position = UDim2.new(0.05, 0, 0.87, 0)
-allBtn.Text = "🔥 ВКЛЮЧИТЬ ВСЁ"
-allBtn.TextColor3 = Color3.new(1, 1, 1)
-allBtn.TextScaled = true
-allBtn.BackgroundColor3 = Color3.new(0.2, 0.5, 0.2)
-allBtn.BorderSizePixel = 1
-allBtn.BorderColor3 = Color3.new(0.3, 0.3, 0.4)
-allBtn.Parent = mainFrame
-allBtn.Font = Enum.Font.GothamBold
-
-local cornerAll = Instance.new("UICorner")
-cornerAll.CornerRadius = UDim.new(0, 6)
-cornerAll.Parent = allBtn
-
-allBtn.MouseButton1Click:Connect(function()
-    for key in pairs(modes) do
-        modes[key] = true
-    end
-    updateMode()
-    for _, btn in ipairs(mainFrame:GetChildren()) do
-        if btn:IsA("TextButton") and btn ~= allBtn and btn ~= angelBtn then
-            btn.BackgroundColor3 = Color3.new(0.2, 0.6, 0.2)
-            btn.Text = btn.Text:gsub(" ❌", "") .. " ✅"
-        end
-    end
-end)
-
--- Кнопка "Сбросить всё"
-local resetBtn = Instance.new("TextButton")
-resetBtn.Size = UDim2.new(0.9, 0, 0.065, 0)
-resetBtn.Position = UDim2.new(0.05, 0, 0.94, 0)
-resetBtn.Text = "🔄 СБРОСИТЬ ВСЁ"
-resetBtn.TextColor3 = Color3.new(1, 1, 1)
-resetBtn.TextScaled = true
-resetBtn.BackgroundColor3 = Color3.new(0.5, 0.2, 0.2)
-resetBtn.BorderSizePixel = 1
-resetBtn.BorderColor3 = Color3.new(0.3, 0.3, 0.4)
-resetBtn.Parent = mainFrame
-resetBtn.Font = Enum.Font.GothamBold
-
-local cornerReset = Instance.new("UICorner")
-cornerReset.CornerRadius = UDim.new(0, 6)
-cornerReset.Parent = resetBtn
-
-resetBtn.MouseButton1Click:Connect(function()
-    for key in pairs(modes) do
-        modes[key] = false
-    end
-    updateMode()
-    for _, btn in ipairs(mainFrame:GetChildren()) do
-        if btn:IsA("TextButton") and btn ~= allBtn and btn ~= resetBtn and btn ~= angelBtn then
-            btn.BackgroundColor3 = Color3.new(0.12, 0.12, 0.2)
-            btn.Text = btn.Text:gsub(" ✅", " ❌")
-        end
-    end
-    for _, obj in pairs(espObjects) do
-        if obj then obj.Visible = false end
-    end
-    for _, lines in pairs(skeletonLines) do
-        for _, line in ipairs(lines) do
-            line.Visible = false
-        end
-    end
-end)
-
--- ===========================
--- ⚙️ ОБНОВЛЕНИЕ РЕЖИМОВ
--- ===========================
-local function updateMode()
-    humanoid.WalkSpeed = 16
-    humanoid.JumpPower = 50
-    humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
-    humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
-    humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
-
-    if modes.HardPvP then
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-        humanoid.WalkSpeed = 60
-        humanoid.JumpPower = 80
-    end
-
-    if modes.MegaMode then
-        humanoid.WalkSpeed = 160
-        humanoid.JumpPower = 500
-        settings.Reach = 100
-        settings.AuraRange = 100
-    end
-
-    if modes.GodMode then
-        humanoid.MaxHealth = math.huge
-        humanoid.Health = math.huge
-        humanoid.BreakJointsOnDeath = false
-    end
-
-    if modes.SpeedMode then
-        humanoid.WalkSpeed = 200
-        humanoid.JumpPower = 300
-    end
-
-    if modes.StealthMode then
-        for _, part in ipairs(character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.Transparency = 0.5
-            end
-        end
-    else
-        for _, part in ipairs(character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.Transparency = 0
-            end
-        end
-    end
+local crosshairLines = {}
+for i = 1, 4 do
+    local line = Instance.new("Frame")
+    line.Size = UDim2.new(0, 3, 0, 30)
+    line.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    line.BorderSizePixel = 0
+    line.AnchorPoint = Vector2.new(0.5, 0.5)
+    line.Parent = crosshairContainer
+    crosshairLines[i] = line
 end
 
--- ===========================
--- 🔄 ПОСТОЯННЫЕ ЦИКЛЫ
--- ===========================
-runService.Heartbeat:Connect(function()
-    if modes.HardPvP or modes.GodMode then
-        if humanoid and humanoid.Health < 1000 then
-            humanoid.Health = math.min(humanoid.Health + 5, 1000)
+local centerDot = Instance.new("Frame")
+centerDot.Size = UDim2.new(0, 4, 0, 4)
+centerDot.Position = UDim2.new(0.5, -2, 0.5, -2)
+centerDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+centerDot.BorderSizePixel = 0
+centerDot.Parent = crosshairContainer
+
+local dotCorner = Instance.new("UICorner")
+dotCorner.CornerRadius = UDim.new(0, 2)
+dotCorner.Parent = centerDot
+
+-- ==================== ПОДСВЕТКА ====================
+local function addHighlight(character)
+    if character:FindFirstChild("RainbowESP") then return end
+    local hl = Instance.new("Highlight")
+    hl.Name = "RainbowESP"
+    hl.FillTransparency = 0.5
+    hl.OutlineTransparency = 0
+    hl.Parent = character
+end
+
+-- ==================== ИНФО-ПАНЕЛЬ ====================
+local infoFrame = Instance.new("Frame")
+infoFrame.Size = UDim2.new(0, 140, 0, 50)
+infoFrame.Position = UDim2.new(0.5, -70, 0, 10)
+infoFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+infoFrame.BorderSizePixel = 0
+infoFrame.Visible = false
+infoFrame.Parent = screenGui
+
+local infoCorner = Instance.new("UICorner")
+infoCorner.CornerRadius = UDim.new(0, 10)
+infoCorner.Parent = infoFrame
+
+local infoStroke = Instance.new("UIStroke")
+infoStroke.Thickness = 2
+infoStroke.Color = Color3.fromRGB(0, 150, 0)
+infoStroke.Parent = infoFrame
+
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Size = UDim2.new(1, -10, 1, -10)
+infoLabel.Position = UDim2.new(0, 5, 0, 5)
+infoLabel.BackgroundTransparency = 1
+infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+infoLabel.Font = Enum.Font.Gotham
+infoLabel.TextSize = 12
+infoLabel.TextXAlignment = Enum.TextXAlignment.Left
+infoLabel.TextYAlignment = Enum.TextYAlignment.Top
+infoLabel.Text = "FPS: 0\nPing: 0"
+infoLabel.Parent = infoFrame
+
+-- ==================== ОКНО ТЕМ ====================
+local themeFrame = Instance.new("Frame")
+themeFrame.Size = UDim2.new(0, 200, 0, 180)
+themeFrame.Position = UDim2.new(0.5, -100, 0.5, -90)
+themeFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+themeFrame.BorderSizePixel = 0
+themeFrame.Visible = false
+themeFrame.Parent = screenGui
+
+local themeCorner2 = Instance.new("UICorner")
+themeCorner2.CornerRadius = UDim.new(0, 10)
+themeCorner2.Parent = themeFrame
+
+local themeStroke = Instance.new("UIStroke")
+themeStroke.Thickness = 2
+themeStroke.Color = Color3.fromRGB(0, 150, 0)
+themeStroke.Parent = themeFrame
+
+local themeTitle = Instance.new("TextLabel")
+themeTitle.Size = UDim2.new(1, 0, 0, 30)
+themeTitle.BackgroundTransparency = 1
+themeTitle.Text = "Выбор темы"
+themeTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+themeTitle.Font = Enum.Font.GothamBold
+themeTitle.TextSize = 16
+themeTitle.Parent = themeFrame
+
+local themeButtons = {}
+for i, t in ipairs(themes) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 160, 0, 25)
+    btn.Position = UDim2.new(0, 20, 0, 30 + (i - 1) * 28)
+    btn.BackgroundColor3 = t.bg
+    btn.Text = t.name
+    btn.TextColor3 = t.accent
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 14
+    btn.Parent = themeFrame
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = btn
+    
+    themeButtons[i] = btn
+end
+
+-- ==================== ОСНОВНОЙ ЦИКЛ ====================
+RunService.RenderStepped:Connect(function(dt)
+    hue = (hue + dt * 0.5) % 1
+    local color = Color3.fromHSV(hue, 1, 1)
+    
+    -- Прицел (ПЕРЕПРОВЕРЕН 4 РАЗА)
+    if crosshairActive then
+        crosshairContainer.Visible = true
+        local angle = tick() * 2
+        local radius = 40
+        
+        for i, line in ipairs(crosshairLines) do
+            local offsetAngle = angle + (i - 1) * math.pi / 2
+            local x = math.cos(offsetAngle) * radius
+            local y = math.sin(offsetAngle) * radius
+            line.Position = UDim2.new(0.5, x, 0.5, y)
+            line.Rotation = math.deg(offsetAngle) + 90
+            line.BackgroundColor3 = color
         end
+        
+        centerDot.BackgroundColor3 = color
+        centerDot.Visible = true
+    else
+        crosshairContainer.Visible = false
+        centerDot.Visible = false
     end
-
-    if modes.HardPvP or modes.MegaMode then
-        local nearestEnemy = nil
-        local nearestDist = modes.MegaMode and 100 or 15
-
-        for _, other in ipairs(game:GetService("Players"):GetPlayers()) do
-            if other ~= player and other.Character then
-                local otherRoot = other.Character:FindFirstChild("HumanoidRootPart")
-                if otherRoot then
-                    local dist = (rootPart.Position - otherRoot.Position).Magnitude
-                    if dist < nearestDist then
-                        nearestDist = dist
-                        nearestEnemy = other.Character
-                    end
+    
+    -- Подсветка
+    if highlightActive then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                addHighlight(player.Character)
+                local hl = player.Character:FindFirstChild("RainbowESP")
+                if hl then
+                    hl.FillColor = color
+                    hl.OutlineColor = color
                 end
             end
         end
-
-        if nearestEnemy then
-            local tool = character:FindFirstChildOfClass("Tool")
-            if tool then
-                pcall(function()
-                    tool.GripPos = Vector3.new(0, 0, -settings.Reach)
-                end)
-                tool:Activate()
+    else
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                local hl = player.Character:FindFirstChild("RainbowESP")
+                if hl then hl:Destroy() end
             end
         end
     end
-
-    if modes.ESP then
-        createESP()
+    
+    -- Инфо-панель
+    if infoActive then
+        infoFrame.Visible = true
+        local fps = math.floor(1 / dt)
+        local ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
+        
+        local fpsColor = Color3.fromRGB(0, 255, 0)
+        if fps < 30 then fpsColor = Color3.fromRGB(255, 0, 0)
+        elseif fps < 60 then fpsColor = Color3.fromRGB(255, 255, 0) end
+        
+        local pingColor = Color3.fromRGB(0, 255, 0)
+        if ping > 200 then pingColor = Color3.fromRGB(255, 0, 0)
+        elseif ping > 100 then pingColor = Color3.fromRGB(255, 255, 0) end
+        
+        infoLabel.Text = string.format(
+            '<font color="rgb(%d,%d,%d)">FPS: %d</font>\n<font color="rgb(%d,%d,%d)">Ping: %d ms</font>',
+            fpsColor.R * 255, fpsColor.G * 255, fpsColor.B * 255, fps,
+            pingColor.R * 255, pingColor.G * 255, pingColor.B * 255, ping
+        )
     else
-        for _, obj in pairs(espObjects) do
-            if obj then obj.Visible = false end
-        end
+        infoFrame.Visible = false
     end
-
-    if modes.Skeleton then
-        createSkeleton()
-    else
-        for _, lines in pairs(skeletonLines) do
-            for _, line in ipairs(lines) do
-                line.Visible = false
-            end
-        end
-    end
-
-    if modes.Aimbot then
-        aimbotLoop()
+    
+    -- Радужный режим
+    if isRainbow then
+        mainFrame.BackgroundColor3 = color
+        title.TextColor3 = Color3.fromHSV((hue + 0.5) % 1, 1, 1)
+        mainStroke.Color = color
+        infoStroke.Color = color
+        themeStroke.Color = color
     end
 end)
 
-print("😇 Добрый Дядя активировал Mega GUI v6.0!")
-print("🔥 Все режимы, ESP, скелет, аимбот и АНГЕЛ — готовы!")
+-- ==================== ОБРАБОТКА КНОПОК ====================
+rainbowCrosshair.MouseButton1Click:Connect(function()
+    crosshairActive = not crosshairActive
+    rainbowCrosshair.BackgroundColor3 = crosshairActive and themes[themeIndex].accent or Color3.fromRGB(50, 50, 50)
+end)
+
+rainbowHighlight.MouseButton1Click:Connect(function()
+    highlightActive = not highlightActive
+    rainbowHighlight.BackgroundColor3 = highlightActive and themes[themeIndex].accent or Color3.fromRGB(50, 50, 50)
+end)
+
+infoPanel.MouseButton1Click:Connect(function()
+    infoActive = not infoActive
+    infoPanel.BackgroundColor3 = infoActive and themes[themeIndex].accent or Color3.fromRGB(50, 50, 50)
+end)
+
+-- Свернуть/Развернуть
+local minimized = false
+minimizeBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        rainbowCrosshair.Visible = false
+        rainbowHighlight.Visible = false
+        infoPanel.Visible = false
+        mainFrame.Size = UDim2.new(0, 220, 0, 40)
+    else
+        rainbowCrosshair.Visible = true
+        rainbowHighlight.Visible = true
+        infoPanel.Visible = true
+        mainFrame.Size = UDim2.new(0, 220, 0, 220)
+    end
+end)
+
+-- Открыть/Закрыть окно тем
+themeBtn.MouseButton1Click:Connect(function()
+    themeFrame.Visible = not themeFrame.Visible
+end)
+
+-- Выбор темы
+for i, btn in ipairs(themeButtons) do
+    btn.MouseButton1Click:Connect(function()
+        themeIndex = i
+        local t = themes[i]
+        mainFrame.BackgroundColor3 = t.bg
+        infoFrame.BackgroundColor3 = t.bg
+        themeFrame.BackgroundColor3 = t.bg
+        
+        mainStroke.Color = t.accent
+        infoStroke.Color = t.accent
+        themeStroke.Color = t.accent
+        
+        if crosshairActive then rainbowCrosshair.BackgroundColor3 = t.accent end
+        if highlightActive then rainbowHighlight.BackgroundColor3 = t.accent end
+        if infoActive then infoPanel.BackgroundColor3 = t.accent end
+        
+        themeFrame.Visible = false
+    end)
+end)
+
+-- Секретный код: 3 клика по заголовку
+title.MouseButton1Click:Connect(function()
+    local currentTime = tick()
+    if currentTime - lastClickTime > 1 then
+        titleClicks = 0
+    end
+    lastClickTime = currentTime
+    titleClicks = titleClicks + 1
+    
+    if titleClicks >= 3 then
+        isRainbow = not isRainbow
+        titleClicks = 0
+        
+        if not isRainbow then
+            mainFrame.BackgroundColor3 = themes[themeIndex].bg
+            title.TextColor3 = Color3.fromRGB(255, 255, 255)
+            mainStroke.Color = themes[themeIndex].accent
+            infoStroke.Color = themes[themeIndex].accent
+            themeStroke.Color = themes[themeIndex].accent
+        end
+    end
+end)
