@@ -1,117 +1,204 @@
+-- ============================================
+-- 🎨 MY VISUAL HUB v4.0 (ФИНАЛЬНЫЙ)
+-- 👨‍💻 Автор: Тимур Бодяк
+-- 💥 Улучшено в 10 раз + Настройки + ESP сущностей
+-- ============================================
+
+-- ==================== ЗАЩИТА ОТ ОШИБОК ====================
+local success, err = pcall(function()
+    task.wait(1)
+end)
+
+-- ==================== СЕРВИСЫ ====================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
+
+-- ==================== БЕЗОПАСНОЕ ПОЛУЧЕНИЕ PLAYERGUI ====================
+local playerGui
+local guiSuccess, guiErr = pcall(function()
+    playerGui = LocalPlayer:WaitForChild("PlayerGui", 10)
+end)
+
+if not guiSuccess or not playerGui then
+    warn("❌ Не удалось получить PlayerGui")
+    return
+end
 
 -- ==================== GUI ====================
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MyVisualHub"
+screenGui.Name = "MyVisualHubV4"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = playerGui
 
--- Главная рамка
+-- ==================== ГЛАВНАЯ РАМКА ====================
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 220, 0, 220)
+mainFrame.Size = UDim2.new(0, 260, 0, 400)
 mainFrame.Position = UDim2.new(0, 20, 0, 20)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 10)
-corner.Parent = mainFrame
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 16)
+mainCorner.Parent = mainFrame
+
+local mainGradient = Instance.new("UIGradient")
+mainGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 15, 20)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 35))
+}
+mainGradient.Rotation = 45
+mainGradient.Parent = mainFrame
 
 local mainStroke = Instance.new("UIStroke")
 mainStroke.Thickness = 2
-mainStroke.Color = Color3.fromRGB(0, 150, 0)
+mainStroke.Color = Color3.fromRGB(0, 200, 100)
+mainStroke.Transparency = 0.3
 mainStroke.Parent = mainFrame
 
--- Заголовок
+-- ==================== ЗАГОЛОВОК ====================
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 45)
+titleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+titleBar.BackgroundTransparency = 0.3
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 16)
+titleCorner.Parent = titleBar
+
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -60, 0, 30)
-title.Position = UDim2.new(0, 10, 0, 0)
+title.Size = UDim2.new(1, -90, 1, 0)
+title.Position = UDim2.new(0, 15, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "Визуалы"
+title.Text = "🎨 Визуалы v4.0"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 16
+title.TextSize = 18
 title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = mainFrame
+title.Parent = titleBar
 
--- Кнопка свернуть
+-- ==================== КНОПКИ УПРАВЛЕНИЯ ====================
 local minimizeBtn = Instance.new("TextButton")
 minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-minimizeBtn.Position = UDim2.new(1, -70, 0, 0)
-minimizeBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+minimizeBtn.Position = UDim2.new(1, -70, 0, 7)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 minimizeBtn.Text = "—"
 minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 minimizeBtn.Font = Enum.Font.GothamBold
-minimizeBtn.TextSize = 14
-minimizeBtn.Parent = mainFrame
+minimizeBtn.TextSize = 16
+minimizeBtn.AutoButtonColor = false
+minimizeBtn.Parent = titleBar
 
 local minCorner = Instance.new("UICorner")
-minCorner.CornerRadius = UDim.new(0, 6)
+minCorner.CornerRadius = UDim.new(0, 8)
 minCorner.Parent = minimizeBtn
 
--- Кнопка тем
 local themeBtn = Instance.new("TextButton")
 themeBtn.Size = UDim2.new(0, 30, 0, 30)
-themeBtn.Position = UDim2.new(1, -35, 0, 0)
-themeBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-themeBtn.Text = "🎨"
+themeBtn.Position = UDim2.new(1, -35, 0, 7)
+themeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+themeBtn.Text = "⚙"
 themeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 themeBtn.Font = Enum.Font.GothamBold
-themeBtn.TextSize = 14
-themeBtn.Parent = mainFrame
+themeBtn.TextSize = 16
+themeBtn.AutoButtonColor = false
+themeBtn.Parent = titleBar
 
 local themeCorner = Instance.new("UICorner")
-themeCorner.CornerRadius = UDim.new(0, 6)
+themeCorner.CornerRadius = UDim.new(0, 8)
 themeCorner.Parent = themeBtn
+
+-- ==================== АНИМАЦИЯ ====================
+local function addHoverEffect(button, normalColor, hoverColor)
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {
+            BackgroundColor3 = hoverColor
+        }):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {
+            BackgroundColor3 = normalColor
+        }):Play()
+    end)
+end
 
 -- ==================== ФУНКЦИЯ КНОПОК ====================
 local function createButton(name, text, yPos)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 180, 0, 30)
+    btn.Size = UDim2.new(0, 220, 0, 38)
     btn.Position = UDim2.new(0, 20, 0, yPos)
-    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
     btn.Text = text
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 14
     btn.Name = name
+    btn.AutoButtonColor = false
     btn.Parent = mainFrame
     
     local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.CornerRadius = UDim.new(0, 10)
     btnCorner.Parent = btn
+    
+    local btnStroke = Instance.new("UIStroke")
+    btnStroke.Thickness = 1
+    btnStroke.Color = Color3.fromRGB(80, 80, 100)
+    btnStroke.Transparency = 0.5
+    btnStroke.Parent = btn
+    
+    addHoverEffect(btn, Color3.fromRGB(40, 40, 50), Color3.fromRGB(55, 55, 70))
     
     return btn
 end
 
-local rainbowCrosshair = createButton("RainbowCrosshair", "Радужный прицел", 40)
-local rainbowHighlight = createButton("RainbowHighlight", "Радужная подсветка", 80)
-local infoPanel = createButton("InfoPanel", "Инфо-панель", 120)
+-- ==================== КНОПКИ ====================
+local rainbowCrosshair = createButton("RainbowCrosshair", "🎯 Радужный прицел", 55)
+local rainbowHighlight = createButton("RainbowHighlight", "🌈 Радужная подсветка", 98)
+local infoPanel = createButton("InfoPanel", "📊 Инфо-панель", 141)
+local entityESP = createButton("EntityESP", "👾 ESP сущностей", 184)
+local settingsBtn = createButton("SettingsBtn", "⚙️ Настройки", 227)
 
 -- ==================== ПЕРЕМЕННЫЕ ====================
 local crosshairActive = false
 local highlightActive = false
 local infoActive = false
+local entityESPActive = false
+local settingsOpen = false
 local hue = 0
 local themeIndex = 1
 local isRainbow = false
 local titleClicks = 0
 local lastClickTime = 0
+local minimized = false
 
-local themes = {
-    {bg = Color3.fromRGB(25, 25, 25), accent = Color3.fromRGB(0, 150, 0), name = "Тёмная"},
-    {bg = Color3.fromRGB(35, 0, 50), accent = Color3.fromRGB(150, 0, 200), name = "Фиолет"},
-    {bg = Color3.fromRGB(0, 30, 50), accent = Color3.fromRGB(0, 150, 255), name = "Синяя"},
-    {bg = Color3.fromRGB(50, 30, 0), accent = Color3.fromRGB(255, 150, 0), name = "Оранж"},
-    {bg = Color3.fromRGB(40, 40, 40), accent = Color3.fromRGB(180, 180, 180), name = "Серая"}
+-- Настройки
+local settings = {
+    crosshairSize = 40,
+    crosshairSpeed = 2,
+    highlightTransparency = 0.5,
+    entityESPColor = Color3.fromRGB(255, 0, 255),
+    espShowNames = true,
+    espShowDistance = true
 }
 
--- ==================== ПРИЦЕЛ (УЛУЧШЕННЫЙ v4) ====================
+local themes = {
+    {bg = Color3.fromRGB(15, 15, 20), accent = Color3.fromRGB(0, 200, 100), name = "Тёмная"},
+    {bg = Color3.fromRGB(30, 0, 45), accent = Color3.fromRGB(180, 0, 255), name = "Фиолет"},
+    {bg = Color3.fromRGB(0, 25, 45), accent = Color3.fromRGB(0, 170, 255), name = "Синяя"},
+    {bg = Color3.fromRGB(45, 25, 0), accent = Color3.fromRGB(255, 140, 0), name = "Оранж"},
+    {bg = Color3.fromRGB(35, 35, 35), accent = Color3.fromRGB(160, 160, 160), name = "Серая"}
+}
+
+-- ==================== ПРИЦЕЛ ====================
 local crosshairContainer = Instance.new("Frame")
 crosshairContainer.Size = UDim2.new(0, 200, 0, 200)
 crosshairContainer.Position = UDim2.new(0.5, -100, 0.5, -100)
@@ -131,42 +218,104 @@ for i = 1, 4 do
 end
 
 local centerDot = Instance.new("Frame")
-centerDot.Size = UDim2.new(0, 4, 0, 4)
-centerDot.Position = UDim2.new(0.5, -2, 0.5, -2)
+centerDot.Size = UDim2.new(0, 5, 0, 5)
+centerDot.Position = UDim2.new(0.5, -2.5, 0.5, -2.5)
 centerDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 centerDot.BorderSizePixel = 0
 centerDot.Parent = crosshairContainer
 
 local dotCorner = Instance.new("UICorner")
-dotCorner.CornerRadius = UDim.new(0, 2)
+dotCorner.CornerRadius = UDim.new(0, 3)
 dotCorner.Parent = centerDot
 
--- ==================== ПОДСВЕТКА ====================
+-- ==================== ПОДСВЕТКА ИГРОКОВ ====================
 local function addHighlight(character)
     if character:FindFirstChild("RainbowESP") then return end
     local hl = Instance.new("Highlight")
     hl.Name = "RainbowESP"
-    hl.FillTransparency = 0.5
+    hl.FillTransparency = settings.highlightTransparency
     hl.OutlineTransparency = 0
     hl.Parent = character
 end
 
+-- ==================== ESP СУЩНОСТЕЙ (НОВОЕ!) ====================
+local entityHighlights = {}
+
+local function createEntityESP()
+    -- Ищем все сущности в workspace (NPC, мобы, объекты)
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and obj ~= LocalPlayer.Character then
+            -- Проверяем, есть ли у модели Humanoid (NPC, моб)
+            local humanoid = obj:FindFirstChildOfClass("Humanoid")
+            local rootPart = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj:FindFirstChild("Head")
+            
+            if humanoid and rootPart then
+                -- Проверяем, не игрок ли это (игроков подсвечиваем отдельно)
+                local isPlayer = false
+                for _, plr in ipairs(Players:GetPlayers()) do
+                    if plr.Character == obj then
+                        isPlayer = true
+                        break
+                    end
+                end
+                
+                if not isPlayer then
+                    if not entityHighlights[obj] then
+                        local hl = Instance.new("Highlight")
+                        hl.Name = "EntityESP"
+                        hl.FillColor = settings.entityESPColor
+                        hl.OutlineColor = settings.entityESPColor
+                        hl.FillTransparency = 0.6
+                        hl.OutlineTransparency = 0
+                        hl.Parent = obj
+                        entityHighlights[obj] = hl
+                    end
+                    
+                    -- Обновляем цвет (радуга)
+                    if entityHighlights[obj] then
+                        entityHighlights[obj].FillColor = settings.entityESPColor
+                        entityHighlights[obj].OutlineColor = settings.entityESPColor
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function removeEntityESP()
+    for obj, hl in pairs(entityHighlights) do
+        if hl and hl.Parent then
+            hl:Destroy()
+        end
+    end
+    entityHighlights = {}
+end
+
 -- ==================== ИНФО-ПАНЕЛЬ ====================
 local infoFrame = Instance.new("Frame")
-infoFrame.Size = UDim2.new(0, 140, 0, 50)
-infoFrame.Position = UDim2.new(0.5, -70, 0, 10)
-infoFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+infoFrame.Size = UDim2.new(0, 170, 0, 60)
+infoFrame.Position = UDim2.new(0.5, -85, 0, 10)
+infoFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 infoFrame.BorderSizePixel = 0
 infoFrame.Visible = false
 infoFrame.Parent = screenGui
 
 local infoCorner = Instance.new("UICorner")
-infoCorner.CornerRadius = UDim.new(0, 10)
+infoCorner.CornerRadius = UDim.new(0, 12)
 infoCorner.Parent = infoFrame
+
+local infoGradient = Instance.new("UIGradient")
+infoGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 15, 20)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 35))
+}
+infoGradient.Rotation = 45
+infoGradient.Parent = infoFrame
 
 local infoStroke = Instance.new("UIStroke")
 infoStroke.Thickness = 2
-infoStroke.Color = Color3.fromRGB(0, 150, 0)
+infoStroke.Color = Color3.fromRGB(0, 200, 100)
+infoStroke.Transparency = 0.3
 infoStroke.Parent = infoFrame
 
 local infoLabel = Instance.new("TextLabel")
@@ -175,169 +324,278 @@ infoLabel.Position = UDim2.new(0, 5, 0, 5)
 infoLabel.BackgroundTransparency = 1
 infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 infoLabel.Font = Enum.Font.Gotham
-infoLabel.TextSize = 12
+infoLabel.TextSize = 13
 infoLabel.TextXAlignment = Enum.TextXAlignment.Left
 infoLabel.TextYAlignment = Enum.TextYAlignment.Top
 infoLabel.Text = "FPS: 0\nPing: 0"
 infoLabel.Parent = infoFrame
 
--- ==================== ОКНО ТЕМ ====================
-local themeFrame = Instance.new("Frame")
-themeFrame.Size = UDim2.new(0, 200, 0, 180)
-themeFrame.Position = UDim2.new(0.5, -100, 0.5, -90)
-themeFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-themeFrame.BorderSizePixel = 0
-themeFrame.Visible = false
-themeFrame.Parent = screenGui
+-- ==================== ОКНО НАСТРОЕК (НОВОЕ!) ====================
+local settingsFrame = Instance.new("Frame")
+settingsFrame.Size = UDim2.new(0, 240, 0, 320)
+settingsFrame.Position = UDim2.new(0.5, -120, 0.5, -160)
+settingsFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+settingsFrame.BorderSizePixel = 0
+settingsFrame.Visible = false
+settingsFrame.Parent = screenGui
 
-local themeCorner2 = Instance.new("UICorner")
-themeCorner2.CornerRadius = UDim.new(0, 10)
-themeCorner2.Parent = themeFrame
+local settingsCorner = Instance.new("UICorner")
+settingsCorner.CornerRadius = UDim.new(0, 14)
+settingsCorner.Parent = settingsFrame
 
-local themeStroke = Instance.new("UIStroke")
-themeStroke.Thickness = 2
-themeStroke.Color = Color3.fromRGB(0, 150, 0)
-themeStroke.Parent = themeFrame
+local settingsStroke = Instance.new("UIStroke")
+settingsStroke.Thickness = 2
+settingsStroke.Color = Color3.fromRGB(0, 200, 100)
+settingsStroke.Transparency = 0.3
+settingsStroke.Parent = settingsFrame
 
-local themeTitle = Instance.new("TextLabel")
-themeTitle.Size = UDim2.new(1, 0, 0, 30)
-themeTitle.BackgroundTransparency = 1
-themeTitle.Text = "Выбор темы"
-themeTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-themeTitle.Font = Enum.Font.GothamBold
-themeTitle.TextSize = 16
-themeTitle.Parent = themeFrame
+local settingsTitle = Instance.new("TextLabel")
+settingsTitle.Size = UDim2.new(1, 0, 0, 35)
+settingsTitle.BackgroundTransparency = 1
+settingsTitle.Text = "⚙️ Настройки"
+settingsTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+settingsTitle.Font = Enum.Font.GothamBold
+settingsTitle.TextSize = 17
+settingsTitle.Parent = settingsFrame
 
-local themeButtons = {}
-for i, t in ipairs(themes) do
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 160, 0, 25)
-    btn.Position = UDim2.new(0, 20, 0, 30 + (i - 1) * 28)
-    btn.BackgroundColor3 = t.bg
-    btn.Text = t.name
-    btn.TextColor3 = t.accent
-    btn.Font = Enum.Font.Gotham
-    btn.TextSize = 14
-    btn.Parent = themeFrame
+-- Слайдер для размера прицела
+local function createSlider(name, yPos, minVal, maxVal, defaultVal, callback)
+    local sliderFrame = Instance.new("Frame")
+    sliderFrame.Size = UDim2.new(0, 200, 0, 40)
+    sliderFrame.Position = UDim2.new(0, 20, 0, yPos)
+    sliderFrame.BackgroundTransparency = 1
+    sliderFrame.Parent = settingsFrame
     
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 6)
-    btnCorner.Parent = btn
+    local sliderLabel = Instance.new("TextLabel")
+    sliderLabel.Size = UDim2.new(1, 0, 0, 15)
+    sliderLabel.BackgroundTransparency = 1
+    sliderLabel.Text = name .. ": " .. defaultVal
+    sliderLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    sliderLabel.Font = Enum.Font.Gotham
+    sliderLabel.TextSize = 12
+    sliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+    sliderLabel.Parent = sliderFrame
     
-    themeButtons[i] = btn
+    local sliderBg = Instance.new("Frame")
+    sliderBg.Size = UDim2.new(1, 0, 0, 8)
+    sliderBg.Position = UDim2.new(0, 0, 0, 22)
+    sliderBg.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    sliderBg.BorderSizePixel = 0
+    sliderBg.Parent = sliderFrame
+    
+    local sliderBgCorner = Instance.new("UICorner")
+    sliderBgCorner.CornerRadius = UDim.new(0, 4)
+    sliderBgCorner.Parent = sliderBg
+    
+    local sliderFill = Instance.new("Frame")
+    sliderFill.Size = UDim2.new((defaultVal - minVal) / (maxVal - minVal), 0, 1, 0)
+    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+    sliderFill.BorderSizePixel = 0
+    sliderFill.Parent = sliderBg
+    
+    local sliderFillCorner = Instance.new("UICorner")
+    sliderFillCorner.CornerRadius = UDim.new(0, 4)
+    sliderFillCorner.Parent = sliderFill
+    
+    local dragging = false
+    
+    sliderBg.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+        end
+    end)
+    
+    sliderBg.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local mousePos = UserInputService:GetMouseLocation()
+            local relativeX = math.clamp((mousePos.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
+            sliderFill.Size = UDim2.new(relativeX, 0, 1, 0)
+            local value = math.floor(minVal + (maxVal - minVal) * relativeX)
+            sliderLabel.Text = name .. ": " .. value
+            callback(value)
+        end
+    end)
+    
+    return sliderFrame
 end
+
+-- Слайдеры настроек
+createSlider("Размер прицела", 40, 20, 80, 40, function(val)
+    settings.crosshairSize = val
+end)
+
+createSlider("Скорость прицела", 90, 1, 5, 2, function(val)
+    settings.crosshairSpeed = val
+end)
+
+createSlider("Прозрачность подсветки", 140, 0, 1, 0.5, function(val)
+    settings.highlightTransparency = val
+end)
+
+-- Кнопка закрытия настроек
+local closeSettingsBtn = Instance.new("TextButton")
+closeSettingsBtn.Size = UDim2.new(0, 200, 0, 30)
+closeSettingsBtn.Position = UDim2.new(0, 20, 0, 190)
+closeSettingsBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeSettingsBtn.Text = "Закрыть"
+closeSettingsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeSettingsBtn.Font = Enum.Font.GothamBold
+closeSettingsBtn.TextSize = 14
+closeSettingsBtn.AutoButtonColor = false
+closeSettingsBtn.Parent = settingsFrame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 8)
+closeCorner.Parent = closeSettingsBtn
+
+closeSettingsBtn.MouseButton1Click:Connect(function()
+    settingsFrame.Visible = false
+    settingsOpen = false
+end)
 
 -- ==================== ОСНОВНОЙ ЦИКЛ ====================
 RunService.RenderStepped:Connect(function(dt)
-    hue = (hue + dt * 0.5) % 1
-    local color = Color3.fromHSV(hue, 1, 1)
-    
-    -- Прицел (ПЕРЕПРОВЕРЕН 4 РАЗА)
-    if crosshairActive then
-        crosshairContainer.Visible = true
-        local angle = tick() * 2
-        local radius = 40
+    local success, err = pcall(function()
+        hue = (hue + dt * 0.5) % 1
+        local color = Color3.fromHSV(hue, 1, 1)
         
-        for i, line in ipairs(crosshairLines) do
-            local offsetAngle = angle + (i - 1) * math.pi / 2
-            local x = math.cos(offsetAngle) * radius
-            local y = math.sin(offsetAngle) * radius
-            line.Position = UDim2.new(0.5, x, 0.5, y)
-            line.Rotation = math.deg(offsetAngle) + 90
-            line.BackgroundColor3 = color
+        -- Прицел
+        if crosshairActive then
+            crosshairContainer.Visible = true
+            local angle = tick() * settings.crosshairSpeed
+            local radius = settings.crosshairSize
+            
+            for i, line in ipairs(crosshairLines) do
+                local offsetAngle = angle + (i - 1) * math.pi / 2
+                local x = math.cos(offsetAngle) * radius
+                local y = math.sin(offsetAngle) * radius
+                line.Position = UDim2.new(0.5, x, 0.5, y)
+                line.Rotation = math.deg(offsetAngle) + 90
+                line.BackgroundColor3 = color
+            end
+            
+            centerDot.BackgroundColor3 = color
+            centerDot.Visible = true
+        else
+            crosshairContainer.Visible = false
+            centerDot.Visible = false
         end
         
-        centerDot.BackgroundColor3 = color
-        centerDot.Visible = true
-    else
-        crosshairContainer.Visible = false
-        centerDot.Visible = false
-    end
-    
-    -- Подсветка
-    if highlightActive then
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character then
-                addHighlight(player.Character)
-                local hl = player.Character:FindFirstChild("RainbowESP")
-                if hl then
-                    hl.FillColor = color
-                    hl.OutlineColor = color
+        -- Подсветка игроков
+        if highlightActive then
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character then
+                    addHighlight(player.Character)
+                    local hl = player.Character:FindFirstChild("RainbowESP")
+                    if hl then
+                        hl.FillColor = color
+                        hl.OutlineColor = color
+                    end
+                end
+            end
+        else
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character then
+                    local hl = player.Character:FindFirstChild("RainbowESP")
+                    if hl then hl:Destroy() end
                 end
             end
         end
-    else
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character then
-                local hl = player.Character:FindFirstChild("RainbowESP")
-                if hl then hl:Destroy() end
-            end
+        
+        -- ESP сущностей
+        if entityESPActive then
+            settings.entityESPColor = color
+            createEntityESP()
+        else
+            removeEntityESP()
         end
-    end
-    
-    -- Инфо-панель
-    if infoActive then
-        infoFrame.Visible = true
-        local fps = math.floor(1 / dt)
-        local ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
         
-        local fpsColor = Color3.fromRGB(0, 255, 0)
-        if fps < 30 then fpsColor = Color3.fromRGB(255, 0, 0)
-        elseif fps < 60 then fpsColor = Color3.fromRGB(255, 255, 0) end
+        -- Инфо-панель
+        if infoActive then
+            infoFrame.Visible = true
+            local fps = math.floor(1 / dt)
+            local ping = 0
+            pcall(function()
+                ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
+            end)
+            
+            local fpsColor = Color3.fromRGB(0, 255, 0)
+            if fps < 30 then fpsColor = Color3.fromRGB(255, 0, 0)
+            elseif fps < 60 then fpsColor = Color3.fromRGB(255, 255, 0) end
+            
+            local pingColor = Color3.fromRGB(0, 255, 0)
+            if ping > 200 then pingColor = Color3.fromRGB(255, 0, 0)
+            elseif ping > 100 then pingColor = Color3.fromRGB(255, 255, 0) end
+            
+            infoLabel.Text = string.format(
+                '<font color="rgb(%d,%d,%d)">FPS: %d</font>\n<font color="rgb(%d,%d,%d)">Ping: %d ms</font>',
+                fpsColor.R * 255, fpsColor.G * 255, fpsColor.B * 255, fps,
+                pingColor.R * 255, pingColor.G * 255, pingColor.B * 255, ping
+            )
+        else
+            infoFrame.Visible = false
+        end
         
-        local pingColor = Color3.fromRGB(0, 255, 0)
-        if ping > 200 then pingColor = Color3.fromRGB(255, 0, 0)
-        elseif ping > 100 then pingColor = Color3.fromRGB(255, 255, 0) end
-        
-        infoLabel.Text = string.format(
-            '<font color="rgb(%d,%d,%d)">FPS: %d</font>\n<font color="rgb(%d,%d,%d)">Ping: %d ms</font>',
-            fpsColor.R * 255, fpsColor.G * 255, fpsColor.B * 255, fps,
-            pingColor.R * 255, pingColor.G * 255, pingColor.B * 255, ping
-        )
-    else
-        infoFrame.Visible = false
-    end
-    
-    -- Радужный режим
-    if isRainbow then
-        mainFrame.BackgroundColor3 = color
-        title.TextColor3 = Color3.fromHSV((hue + 0.5) % 1, 1, 1)
-        mainStroke.Color = color
-        infoStroke.Color = color
-        themeStroke.Color = color
-    end
+        -- Радужный режим
+        if isRainbow then
+            mainFrame.BackgroundColor3 = color
+            title.TextColor3 = Color3.fromHSV((hue + 0.5) % 1, 1, 1)
+            mainStroke.Color = color
+            infoStroke.Color = color
+            settingsStroke.Color = color
+        end
+    end)
 end)
 
 -- ==================== ОБРАБОТКА КНОПОК ====================
 rainbowCrosshair.MouseButton1Click:Connect(function()
     crosshairActive = not crosshairActive
-    rainbowCrosshair.BackgroundColor3 = crosshairActive and themes[themeIndex].accent or Color3.fromRGB(50, 50, 50)
+    rainbowCrosshair.BackgroundColor3 = crosshairActive and themes[themeIndex].accent or Color3.fromRGB(40, 40, 50)
 end)
 
 rainbowHighlight.MouseButton1Click:Connect(function()
     highlightActive = not highlightActive
-    rainbowHighlight.BackgroundColor3 = highlightActive and themes[themeIndex].accent or Color3.fromRGB(50, 50, 50)
+    rainbowHighlight.BackgroundColor3 = highlightActive and themes[themeIndex].accent or Color3.fromRGB(40, 40, 50)
 end)
 
 infoPanel.MouseButton1Click:Connect(function()
     infoActive = not infoActive
-    infoPanel.BackgroundColor3 = infoActive and themes[themeIndex].accent or Color3.fromRGB(50, 50, 50)
+    infoPanel.BackgroundColor3 = infoActive and themes[themeIndex].accent or Color3.fromRGB(40, 40, 50)
+end)
+
+entityESP.MouseButton1Click:Connect(function()
+    entityESPActive = not entityESPActive
+    entityESP.BackgroundColor3 = entityESPActive and themes[themeIndex].accent or Color3.fromRGB(40, 40, 50)
+end)
+
+settingsBtn.MouseButton1Click:Connect(function()
+    settingsOpen = not settingsOpen
+    settingsFrame.Visible = settingsOpen
 end)
 
 -- Свернуть/Развернуть
-local minimized = false
 minimizeBtn.MouseButton1Click:Connect(function()
     minimized = not minimized
     if minimized then
         rainbowCrosshair.Visible = false
         rainbowHighlight.Visible = false
         infoPanel.Visible = false
-        mainFrame.Size = UDim2.new(0, 220, 0, 40)
+        entityESP.Visible = false
+        settingsBtn.Visible = false
+        mainFrame.Size = UDim2.new(0, 260, 0, 50)
     else
         rainbowCrosshair.Visible = true
         rainbowHighlight.Visible = true
         infoPanel.Visible = true
-        mainFrame.Size = UDim2.new(0, 220, 0, 220)
+        entityESP.Visible = true
+        settingsBtn.Visible = true
+        mainFrame.Size = UDim2.new(0, 260, 0, 400)
     end
 end)
 
@@ -346,6 +604,60 @@ themeBtn.MouseButton1Click:Connect(function()
     themeFrame.Visible = not themeFrame.Visible
 end)
 
+-- Окно тем
+local themeFrame = Instance.new("Frame")
+themeFrame.Size = UDim2.new(0, 220, 0, 200)
+themeFrame.Position = UDim2.new(0.5, -110, 0.5, -100)
+themeFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+themeFrame.BorderSizePixel = 0
+themeFrame.Visible = false
+themeFrame.Parent = screenGui
+
+local themeCorner2 = Instance.new("UICorner")
+themeCorner2.CornerRadius = UDim.new(0, 14)
+themeCorner2.Parent = themeFrame
+
+local themeStroke = Instance.new("UIStroke")
+themeStroke.Thickness = 2
+themeStroke.Color = Color3.fromRGB(0, 200, 100)
+themeStroke.Transparency = 0.3
+themeStroke.Parent = themeFrame
+
+local themeTitle = Instance.new("TextLabel")
+themeTitle.Size = UDim2.new(1, 0, 0, 35)
+themeTitle.BackgroundTransparency = 1
+themeTitle.Text = "🎨 Выбор темы"
+themeTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+themeTitle.Font = Enum.Font.GothamBold
+themeTitle.TextSize = 17
+themeTitle.Parent = themeFrame
+
+local themeButtons = {}
+for i, t in ipairs(themes) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 180, 0, 28)
+    btn.Position = UDim2.new(0, 20, 0, 40 + (i - 1) * 32)
+    btn.BackgroundColor3 = t.bg
+    btn.Text = t.name
+    btn.TextColor3 = t.accent
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 14
+    btn.AutoButtonColor = false
+    btn.Parent = themeFrame
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+    
+    local btnStroke = Instance.new("UIStroke")
+    btnStroke.Thickness = 1
+    btnStroke.Color = t.accent
+    btnStroke.Transparency = 0.5
+    btnStroke.Parent = btn
+    
+    themeButtons[i] = btn
+end
+
 -- Выбор темы
 for i, btn in ipairs(themeButtons) do
     btn.MouseButton1Click:Connect(function()
@@ -353,19 +665,17 @@ for i, btn in ipairs(themeButtons) do
         local t = themes[i]
         mainFrame.BackgroundColor3 = t.bg
         infoFrame.BackgroundColor3 = t.bg
+        settingsFrame.BackgroundColor3 = t.bg
         themeFrame.BackgroundColor3 = t.bg
         
         mainStroke.Color = t.accent
         infoStroke.Color = t.accent
+        settingsStroke.Color = t.accent
         themeStroke.Color = t.accent
-        
-        if crosshairActive then rainbowCrosshair.BackgroundColor3 = t.accent end
-        if highlightActive then rainbowHighlight.BackgroundColor3 = t.accent end
-        if infoActive then infoPanel.BackgroundColor3 = t.accent end
         
         themeFrame.Visible = false
     end)
-end)
+end
 
 -- Секретный код: 3 клика по заголовку
 title.MouseButton1Click:Connect(function()
@@ -385,7 +695,13 @@ title.MouseButton1Click:Connect(function()
             title.TextColor3 = Color3.fromRGB(255, 255, 255)
             mainStroke.Color = themes[themeIndex].accent
             infoStroke.Color = themes[themeIndex].accent
-            themeStroke.Color = themes[themeIndex].accent
+            settingsStroke.Color = themes[themeIndex].accent
         end
     end
 end)
+
+-- ==================== УВЕДОМЛЕНИЕ ====================
+print("✅ My Visual Hub v4.0 загружен!")
+print("🎨 Автор: Тимур Бодяк")
+print("👾 ESP сущностей: активен")
+print("⚙️ Настройки: доступны")
